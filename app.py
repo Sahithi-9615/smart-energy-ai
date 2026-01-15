@@ -467,23 +467,180 @@ def chat_with_gemini(message, system_context):
         return None, str(e)
 
 def get_fallback_chat_response(message):
-    """Rule-based fallback chat responses"""
-    message_lower = message.lower()
+    """
+    Enhanced rule-based fallback chat with diverse responses
+    """
+    message_lower = message.lower().strip()
     
-    if any(word in message_lower for word in ['predict', 'energy', 'consumption']):
-        return "I can help you predict energy consumption! Please provide: Temperature (°C), Humidity (%), Square Footage, Occupancy, Renewable Energy (kWh), HVAC Usage (On/Off), Lighting Usage (On/Off), and Holiday (Yes/No)."
+    # ========== GREETINGS ==========
+    if any(word in message_lower for word in ['hello', 'hi', 'hey', 'greetings', 'good morning', 'good evening']):
+        return """Hello! 👋 I'm your Smart Energy AI Assistant. I can help you:
+- Predict energy consumption
+- Guide you through the platform
+- Answer energy-related questions
+
+What would you like to do today?"""
     
-    elif any(word in message_lower for word in ['how', 'use', 'website', 'platform']):
-        return "This platform uses ML to predict energy consumption. Use the Prediction tab for manual entry or file upload. The Dashboard shows visual analytics. I can also guide you through predictions right here!"
+    # ========== WHAT IS THIS WEBSITE / PLATFORM PURPOSE ==========
+    elif any(phrase in message_lower for phrase in ['what is this', 'what does this', 'what is this website', 'what is this platform', 'purpose', 'about this']):
+        return """This is a **Smart Energy AI Platform** that helps you manage energy consumption! 
+
+🎯 **What it does:**
+- Predicts your energy usage based on 8 parameters
+- Uses Machine Learning (Random Forest model)
+- Analyzes temperature, humidity, occupancy, and more
+- Provides personalized energy-saving recommendations
+
+💡 **You get:**
+- Accurate predictions in kWh
+- Usage level (Low/Normal/High)
+- Efficiency score (0-100%)
+- Interactive charts and analytics
+
+Want to try a prediction?"""
     
-    elif any(word in message_lower for word in ['thank', 'thanks', 'great', 'awesome']):
-        return "You're welcome! Happy to help optimize your energy usage. Would you like another prediction or to explore more features?"
+    # ========== HOW TO USE / WEBSITE GUIDANCE ==========
+    elif any(phrase in message_lower for phrase in ['how to use', 'how do i', 'guide me', 'show me how', 'help me use', 'tutorial']):
+        return """📖 **How to Use This Platform:**
+
+**Option 1 - Prediction Tab:**
+1. Click "Prediction" in the menu
+2. Choose "Manual Entry" or "Upload File"
+3. Enter 8 parameters (temp, humidity, etc.)
+4. Get instant predictions!
+
+**Option 2 - AI Chat (here!):**
+1. Tell me you want a prediction
+2. I'll ask for each parameter step-by-step
+3. You answer, I'll calculate!
+
+**Option 3 - Dashboard:**
+- View analytics and charts
+- See energy trends
+
+Which would you like to try?"""
     
-    elif any(word in message_lower for word in ['help', 'what can you do']):
-        return "I can: (1) Guide you through energy predictions, (2) Explain how to use this platform, (3) Answer energy-related questions. What would you like to know?"
+    # ========== ENERGY PREDICTION REQUESTS ==========
+    elif any(word in message_lower for word in ['predict', 'prediction', 'calculate', 'energy consumption', 'how much energy']):
+        return """⚡ **Let's predict your energy consumption!**
+
+I'll need these 8 parameters:
+
+1. 🌡️ **Temperature** (°C)
+2. 💧 **Humidity** (%)
+3. 🏠 **Square Footage** (sq ft)
+4. 👥 **Occupancy** (number of people)
+5. 🌱 **Renewable Energy** (kWh)
+6. ❄️ **HVAC Usage** (On/Off)
+7. 💡 **Lighting Usage** (On/Off)
+8. 🎉 **Holiday** (Yes/No)
+
+Go ahead and provide these values, or say "manual entry" to use the form!"""
     
+    # ========== THANK YOU / GRATITUDE ==========
+    elif any(word in message_lower for word in ['thank', 'thanks', 'appreciate', 'helpful', 'great', 'awesome', 'perfect']):
+        return """You're very welcome! 😊 
+
+I'm here to help you optimize your energy usage anytime!
+
+**What's next?**
+- Try another prediction?
+- Explore the Dashboard charts?
+- Learn energy-saving tips?
+
+Just let me know!"""
+    
+    # ========== ENERGY SAVING TIPS ==========
+    elif any(word in message_lower for word in ['tips', 'save energy', 'reduce', 'lower', 'optimize', 'efficiency']):
+        return """💡 **Energy-Saving Tips:**
+
+**🌡️ Temperature Control:**
+- Keep thermostat at 22-24°C
+- Use programmable thermostats
+- Close windows when HVAC is on
+
+**💡 Lighting:**
+- Switch to LED bulbs
+- Use natural light
+- Turn off lights when leaving rooms
+
+**❄️ HVAC:**
+- Regular maintenance
+- Clean filters monthly
+- Use ceiling fans
+
+**🌱 Renewable Energy:**
+- Install solar panels
+- Consider battery storage
+
+Want a personalized prediction to see your specific savings potential?"""
+    
+    # ========== FEATURES / CAPABILITIES ==========
+    elif any(word in message_lower for word in ['feature', 'what can you', 'capabilities', 'what do you do']):
+        return """🤖 **What I Can Do:**
+
+**1. Energy Predictions** ⚡
+   • Calculate consumption based on your data
+   • Give efficiency scores
+   • Provide recommendations
+
+**2. Platform Guidance** 📖
+   • Show you how to use features
+   • Explain the technology
+   • Help navigate the interface
+
+**3. Energy Insights** 💡
+   • Share energy-saving tips
+   • Explain patterns
+   • Answer questions
+
+**4. File Processing** 📁
+   • Upload documents with your data
+   • Auto-extract parameters
+   • Instant predictions
+
+What would you like to explore?"""
+    
+    # ========== GOODBYE / END CONVERSATION ==========
+    elif any(word in message_lower for word in ['bye', 'goodbye', 'see you', 'exit', 'quit', 'leave']):
+        return """Goodbye! ⚡ Thanks for using Smart Energy AI Platform.
+
+Remember to check your Dashboard for energy trends!
+
+Come back anytime for predictions or energy insights. 
+
+Have a great day! 👋"""
+    
+    # ========== IRRELEVANT / OFF-TOPIC QUERIES ==========
+    elif any(word in message_lower for word in ['java', 'python programming', 'code', 'movie', 'weather', 'news', 'sports', 'game']):
+        # Check if it's REALLY off-topic (not energy-related)
+        if not any(word in message_lower for word in ['energy', 'power', 'electricity', 'consumption', 'predict', 'hvac', 'temperature']):
+            return """I appreciate your question, but I specialize in **energy consumption predictions** and this platform's features! 
+
+I can help you with:
+- Energy predictions
+- Platform guidance
+- Energy-saving tips
+- Understanding your consumption patterns
+
+Do you have any energy-related questions I can help with?"""
+    
+    # ========== DEFAULT / FALLBACK ==========
     else:
-        return "I'm your Smart Energy AI Assistant! I specialize in energy predictions and platform guidance. How can I help you today?"
+        return """I'm your Smart Energy AI Assistant! 🤖
+
+I specialize in:
+- ⚡ **Energy Predictions** - Calculate your consumption
+- 📖 **Platform Help** - Guide you through features  
+- 💡 **Energy Tips** - Optimize your usage
+
+**Popular commands:**
+- "Predict my energy"
+- "How to use this platform"
+- "Give me energy tips"
+- "What is this website"
+
+What would you like to know?"""
 
 # ==================== ROUTES ====================
 
@@ -593,9 +750,8 @@ def extract_from_file():
         print(f"✅ Text extracted ({len(text_content)} characters)")
         
         # Extract data with AI (NEW ORDER: Groq → Gemini → Fallback)
-        if not (GROQ_READY or GEMINI_READY):
-            return jsonify({'success': False, 'error': 'AI services unavailable. Please configure GROQ_API_KEY or GEMINI_API_KEY.'}), 400
-        
+        print(f"✅ Text extracted ({len(text_content)} characters)")
+
         extracted_data, ai_used = extract_data_with_ai(text_content)
         
         if not extracted_data:
