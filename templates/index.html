@@ -81,10 +81,11 @@
         .nav-container {
             max-width: 1400px;
             margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 250px 1fr auto;
+            gap: 3rem;
             align-items: center;
-            padding: 1rem 0;
+            padding: 0.8rem 0;
         }
         
         .logo {
@@ -104,10 +105,11 @@
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
+            justify-content: center;
         }
         
         .nav-tab {
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             background: transparent;
             border: 1px solid transparent;
             color: var(--light);
@@ -115,7 +117,7 @@
             border-radius: 12px;
             transition: all 0.3s ease;
             font-weight: 500;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         
         .nav-tab:hover {
@@ -127,6 +129,27 @@
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(131, 56, 236, 0.1));
             border-color: var(--primary);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        /* Logout Button */
+        .logout-button {
+            padding: 0.7rem 1.5rem;
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 10px;
+            color: var(--secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .logout-button:hover {
+            background: rgba(255, 0, 110, 0.2);
+            transform: translateY(-2px);
         }
         
         /* Tab Content */
@@ -147,12 +170,12 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 3rem;
         }
         
-        /* Hero Section - WITH NEW THUNDER SYMBOL */
+        /* Hero Section */
         .hero {
-            min-height: 75vh;
+            min-height: calc(100vh - 150px);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -164,17 +187,30 @@
             flex: 1;
         }
         
+        /* Welcome Message */
+        .welcome-message {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+            animation: slideUp 0.6s ease;
+        }
+        
+        .welcome-message i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+        
         .hero-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 900;
-            line-height: 1.2;
+            line-height: 1.3;
             margin-bottom: 1.5rem;
             background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: slideUp 0.8s ease;
+            animation: slideUp 0.8s ease 0.2s both;
             letter-spacing: -1px;
         }
         
@@ -184,11 +220,11 @@
         }
         
         .hero-subtitle {
-            font-size: 1.3rem;
+            font-size: 1.15rem;
             color: rgba(255, 255, 255, 0.7);
             margin-bottom: 2rem;
-            line-height: 1.6;
-            animation: slideUp 0.8s ease 0.2s both;
+            line-height: 1.7;
+            animation: slideUp 0.8s ease 0.3s both;
         }
         
         .hero-features {
@@ -202,8 +238,8 @@
         .feature-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
+            gap: 0.9rem;
+            padding: 1rem 1.2rem;
             background: rgba(0, 240, 255, 0.05);
             border-radius: 12px;
             border: 1px solid rgba(0, 240, 255, 0.1);
@@ -217,13 +253,17 @@
         
         .feature-item i {
             color: var(--primary);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
+        }
+        
+        .feature-item span {
+            font-size: 1rem;
         }
         
         .cta-buttons {
             display: flex;
-            gap: 1rem;
-            animation: slideUp 0.8s ease 0.6s both;
+            gap: 1.2rem;
+            animation: slideUp 0.8s ease 0.5s both;
         }
         
         .btn {
@@ -236,7 +276,7 @@
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
             font-family: 'Rajdhani', sans-serif;
         }
         
@@ -262,11 +302,11 @@
             transform: translateY(-3px);
         }
         
-        /* Thunder Symbol with Energy Icons - NEW DESIGN */
+        /* Thunder Symbol */
         .hero-visual {
             flex: 1;
             position: relative;
-            height: 500px;
+            height: 450px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -274,8 +314,8 @@
         
         .energy-orbit-container {
             position: relative;
-            width: 450px;
-            height: 450px;
+            width: 420px;
+            height: 420px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -287,11 +327,10 @@
             50% { transform: translateY(-15px); }
         }
         
-        /* Central Thunder Symbol */
         .thunder-core {
             position: absolute;
-            width: 220px;
-            height: 220px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(131, 56, 236, 0.6) 0%, rgba(0, 240, 255, 0.3) 40%, transparent 70%);
             display: flex;
@@ -314,7 +353,7 @@
         }
         
         .thunder-icon {
-            font-size: 7rem;
+            font-size: 5.5rem;
             background: linear-gradient(135deg, #4dd0e1 0%, #00bcd4 50%, #0097a7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -334,7 +373,6 @@
             }
         }
         
-        /* Orbiting Rings */
         .orbit-ring {
             position: absolute;
             border: 1.5px solid rgba(0, 240, 255, 0.25);
@@ -343,14 +381,14 @@
         }
         
         .orbit-ring-1 {
-            width: 300px;
-            height: 300px;
+            width: 250px;
+            height: 250px;
             animation-duration: 20s;
         }
         
         .orbit-ring-2 {
-            width: 400px;
-            height: 400px;
+            width: 340px;
+            height: 340px;
             animation-duration: 30s;
             animation-direction: reverse;
         }
@@ -360,17 +398,16 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Energy Icons on Inner Orbit */
         .orbit-icon {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.8), rgba(0, 188, 212, 0.9));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
             animation: iconPulse 2s ease-in-out infinite;
             border: 2px solid rgba(0, 240, 255, 0.4);
@@ -387,40 +424,38 @@
             }
         }
         
-        /* Inner orbit icons (4 energy-related icons) */
         .orbit-ring-1 .orbit-icon:nth-child(1) {
-            top: -20px;
+            top: -18px;
             left: 50%;
-            margin-left: -20px;
+            margin-left: -18px;
             animation-delay: 0s;
         }
         
         .orbit-ring-1 .orbit-icon:nth-child(2) {
             top: 50%;
-            right: -20px;
-            margin-top: -20px;
+            right: -18px;
+            margin-top: -18px;
             animation-delay: 0.5s;
         }
         
         .orbit-ring-1 .orbit-icon:nth-child(3) {
-            bottom: -20px;
+            bottom: -18px;
             left: 50%;
-            margin-left: -20px;
+            margin-left: -18px;
             animation-delay: 1s;
         }
         
         .orbit-ring-1 .orbit-icon:nth-child(4) {
             top: 50%;
-            left: -20px;
-            margin-top: -20px;
+            left: -18px;
+            margin-top: -18px;
             animation-delay: 1.5s;
         }
         
-        /* Outer orbit cyan dots */
         .orbit-dot {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             background: var(--primary);
             border-radius: 50%;
             box-shadow: 0 0 15px var(--primary);
@@ -438,11 +473,10 @@
             }
         }
         
-        /* Outer orbit - 8 dots positioned around */
         .orbit-ring-2 .orbit-dot:nth-child(1) {
-            top: -5px;
+            top: -4px;
             left: 50%;
-            margin-left: -5px;
+            margin-left: -4px;
             animation-delay: 0s;
         }
         
@@ -454,8 +488,8 @@
         
         .orbit-ring-2 .orbit-dot:nth-child(3) {
             top: 50%;
-            right: -5px;
-            margin-top: -5px;
+            right: -4px;
+            margin-top: -4px;
             animation-delay: 0.5s;
         }
         
@@ -466,9 +500,9 @@
         }
         
         .orbit-ring-2 .orbit-dot:nth-child(5) {
-            bottom: -5px;
+            bottom: -4px;
             left: 50%;
-            margin-left: -5px;
+            margin-left: -4px;
             animation-delay: 1s;
         }
         
@@ -480,8 +514,8 @@
         
         .orbit-ring-2 .orbit-dot:nth-child(7) {
             top: 50%;
-            left: -5px;
-            margin-top: -5px;
+            left: -4px;
+            margin-top: -4px;
             animation-delay: 1.5s;
         }
         
@@ -491,436 +525,7 @@
             animation-delay: 1.75s;
         }
         
-        /* Section Headers */
-        .section-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .section-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #fff, var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .section-description {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.6);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        /* Prediction Section */
-        .prediction-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            margin-top: 3rem;
-        }
-        
-        .form-card, .results-card {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 24px;
-            padding: 2.5rem;
-            backdrop-filter: blur(10px);
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--light);
-            font-weight: 500;
-        }
-        
-        .form-input, .form-select {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            border-radius: 12px;
-            color: var(--light);
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        .results-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            min-height: 400px;
-        }
-        
-        .results-placeholder {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 1.1rem;
-        }
-        
-        .result-value {
-            font-size: 4rem;
-            font-weight: 800;
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 1rem 0;
-        }
-        
-        .result-label {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 2rem;
-        }
-        
-        .result-metrics {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            width: 100%;
-            margin-top: 2rem;
-        }
-        
-        .metric-card {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1rem;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 240, 255, 0.1);
-        }
-        
-        .metric-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        .metric-label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 0.25rem;
-        }
-        
-        .recommendations {
-            margin-top: 2rem;
-            width: 100%;
-        }
-        
-        .recommendation-item {
-            background: rgba(6, 255, 165, 0.1);
-            border-left: 3px solid var(--success);
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            text-align: left;
-        }
-        
-        /* Chatbot Section */
-        .chatbot-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 0;
-        }
-        
-        .chat-window {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 24px;
-            padding: 2rem;
-            height: 600px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .message {
-            margin-bottom: 1rem;
-            display: flex;
-            gap: 1rem;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .message.user {
-            justify-content: flex-end;
-        }
-        
-        .message.user .message-content {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: var(--darker);
-        }
-        
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-        
-        .message-content {
-            max-width: 70%;
-            padding: 1rem 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 16px;
-            border: 1px solid rgba(0, 240, 255, 0.1);
-        }
-        
-        .chat-input-container {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .chat-input {
-            flex: 1;
-            padding: 1rem 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            border-radius: 12px;
-            color: var(--light);
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1rem;
-        }
-        
-        .chat-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        /* Dashboard Section */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        
-        .chart-card {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 24px;
-            padding: 2rem;
-        }
-        
-        .chart-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-        }
-        
-        /* About Section */
-        .about-content {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .about-card {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 24px;
-            padding: 3rem;
-            margin-bottom: 2rem;
-        }
-        
-        .about-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-        
-        .about-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 1rem;
-        }
-        
-        .tech-stack {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .tech-item {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .tech-item:hover {
-            background: rgba(0, 240, 255, 0.1);
-            transform: translateY(-5px);
-        }
-        
-        .tech-item i {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        /* Guide Section */
-        .guide-steps {
-            display: grid;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-        
-        .step-card {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 16px;
-            padding: 2rem;
-            display: flex;
-            gap: 2rem;
-            align-items: start;
-        }
-        
-        .step-number {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-        
-        .step-content h3 {
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        /* API Section */
-        .api-section {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .api-placeholder {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 24px;
-            padding: 4rem;
-            text-align: center;
-        }
-        
-        .api-placeholder h2 {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-        
-        .api-placeholder p {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        /* Review Section */
-        .review-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .review-form {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 24px;
-            padding: 2.5rem;
-            margin-bottom: 3rem;
-        }
-        
-        .rating-stars {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            font-size: 2rem;
-        }
-        
-        .star {
-            cursor: pointer;
-            color: rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .star:hover, .star.active {
-            color: var(--warning);
-        }
-        
-        .reviews-list {
-            display: grid;
-            gap: 1.5rem;
-        }
-        
-        .review-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-        }
-        
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
-        .review-author {
-            font-weight: 600;
-            color: var(--primary);
-        }
-        
-        .review-rating {
-            color: var(--warning);
-        }
-        
-        /* SIMPLE ROUND ROBOT ASSISTANT IN CORNER */
+        /* Robot Assistant */
         .robot-assistant {
             position: fixed;
             bottom: 30px;
@@ -1003,202 +608,570 @@
         .robot-assistant:hover .robot-tooltip {
             opacity: 1;
         }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
         
-        /* Loading Spinner */
-        .spinner {
-            border: 3px solid rgba(0, 240, 255, 0.1);
-            border-top: 3px solid var(--primary);
-            border-radius: 50%;
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-description {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+
+        /* Prediction Tab Styles */
+        .prediction-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .form-card, .results-card {
+            background: rgba(10, 14, 39, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .method-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .method-btn {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 12px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .method-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        .method-btn.active {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(131, 56, 236, 0.2));
+            border-color: var(--primary);
+        }
+
+        .file-upload-section {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .results-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .results-placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .result-value {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-label {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .result-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.3rem;
+        }
+
+        .recommendations {
+            width: 100%;
+            background: rgba(6, 255, 165, 0.05);
+            border: 1px solid rgba(6, 255, 165, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .recommendation-item {
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* Chat Styles */
+        .chatbot-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .chat-window {
+            background: rgba(10, 14, 39, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
             width: 40px;
             height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 2rem auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        .message-content {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 12px;
+            max-width: 70%;
+            border: 1px solid rgba(0, 240, 255, 0.2);
         }
-        
+
+        .message.user .message-content {
+            background: rgba(131, 56, 236, 0.2);
+            border-color: rgba(131, 56, 236, 0.3);
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 12px;
+            color: var(--light);
+            font-size: 1rem;
+        }
+
+        .btn-voice {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-voice:hover {
+            background: rgba(0, 240, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .btn-voice.active {
+            background: rgba(255, 0, 110, 0.2);
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        .btn-voice.speaking {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(0, 240, 255, 0.8);
+            }
+        }
+
+        .voice-indicator {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            display: none;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .chart-card {
+            background: rgba(10, 14, 39, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-title {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* About Styles */
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .about-card {
+            background: rgba(10, 14, 39, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        .about-title {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .about-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tech-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3);
+        }
+
+        .tech-item i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* Guide Styles */
+        .guide-steps {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            display: flex;
+            gap: 2rem;
+            background: rgba(10, 14, 39, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateX(10px);
+            border-color: var(--primary);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--darker);
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        /* Reviews Styles */
+        .review-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .review-form {
+            background: rgba(10, 14, 39, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 3rem;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .star {
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .star:hover, .star.active {
+            color: #ffbe0b;
+            transform: scale(1.2);
+        }
+
+        .reviews-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .review-card {
+            background: rgba(10, 14, 39, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .review-author {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .review-rating {
+            color: #ffbe0b;
+            font-size: 1.2rem;
+        }
+
+        .review-card p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
         .error-message {
             color: var(--secondary);
-            background: rgba(255, 0, 110, 0.1);
             padding: 1rem;
+            background: rgba(255, 0, 110, 0.1);
             border-radius: 8px;
-            border-left: 3px solid var(--secondary);
+            margin-top: 1rem;
         }
-        
+
+        /* Spinner */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 240, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .hero {
                 flex-direction: column;
+                min-height: auto;
             }
             
-            .prediction-container {
+            .nav-container {
                 grid-template-columns: 1fr;
+                gap: 1rem;
+                text-align: center;
             }
             
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+            .nav-tabs {
+                justify-content: center;
             }
         }
         
         @media (max-width: 768px) {
             .hero-title {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
             
             .hero-features {
                 grid-template-columns: 1fr;
             }
             
-            .tech-stack {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
+            .energy-orbit-container {
+                width: 300px;
+                height: 300px;
             }
         }
-
-        /* Logout Button */
-        .logout-button {
-            padding: 0.6rem 1.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: var(--darker);
-            border-radius: 8px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
-        }
-        
-        .logout-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
-        }
-        
-        .user-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-info {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.95rem;
-        }
-        
-        /* File Upload Styles */
-        .method-selector {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .method-btn {
-            flex: 1;
-            padding: 1rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1rem;
-        }
-        
-        .method-btn.active {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: var(--darker);
-        }
-        
-        .method-btn:not(.active) {
-            background: rgba(0, 240, 255, 0.1);
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-        
-        .method-btn:hover:not(.active) {
-            background: rgba(0, 240, 255, 0.2);
-        }
-        
-        .file-upload-section {
-            padding: 2rem;
-            background: rgba(0, 240, 255, 0.05);
-            border-radius: 16px;
-            border: 2px dashed var(--primary);
-            margin-bottom: 2rem;
-        }
-        
-        .file-upload-section h4 {
-            color: var(--primary);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-    
-        /* Voice Input Buttons */
-        .btn-voice {
-            padding: 0.75rem;
-            background: rgba(0, 240, 255, 0.1);
-            border: 2px solid var(--primary);
-            border-radius: 12px;
-            color: var(--primary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 50px;
-        }
-        
-        .btn-voice:hover {
-            background: rgba(0, 240, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .btn-voice.active {
-            background: var(--secondary);
-            border-color: var(--secondary);
-            color: white;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .btn-voice.speaking {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .voice-indicator {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--secondary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            animation: slideDown 0.3s ease;
-            display: none;
-        }
-        
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
     </style>
 </head>
 <body>
@@ -1209,7 +1182,7 @@
         <div class="nav-container">
             <div class="logo">
                 <i class="fas fa-bolt"></i>
-                Smart Energy AI
+                <span>Smart Energy AI</span>
             </div>
             
             <div class="nav-tabs">
@@ -1219,8 +1192,8 @@
                 <button class="nav-tab" onclick="showTab('prediction')">
                     <i class="fas fa-chart-line"></i> Prediction
                 </button>
-                <button class="nav-tab" onclick="showTab('chatbot')">
-                    <i class="fas fa-robot"></i> AI Chat
+                <button class="nav-tab" onclick="showTab('chat')">
+                    <i class="fas fa-comments"></i> AI Chat
                 </button>
                 <button class="nav-tab" onclick="showTab('dashboard')">
                     <i class="fas fa-chart-bar"></i> Dashboard
@@ -1231,28 +1204,27 @@
                 <button class="nav-tab" onclick="showTab('guide')">
                     <i class="fas fa-book"></i> Guide
                 </button>
-
                 <button class="nav-tab" onclick="showTab('reviews')">
                     <i class="fas fa-star"></i> Reviews
                 </button>
             </div>
             
-            <div class="user-actions">
-                <span class="user-info">
-                    Welcome, {{ username }}!
-                </span>
-                <a href="/logout" class="logout-button">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
+            <a href="/logout" class="logout-button">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
         </div>
     </nav>
     
-    <!-- Home Tab WITH NEW THUNDER SYMBOL -->
+    <!-- Home Tab -->
     <div id="home" class="tab-content active">
         <div class="container">
             <div class="hero">
                 <div class="hero-content">
+                    <div class="welcome-message">
+                        <i class="fas fa-user-circle"></i>
+                        Welcome, <strong>y22cs085</strong>!
+                    </div>
                     <h1 class="hero-title">Smart Energy Analysis & Prediction</h1>
                     <p class="hero-subtitle">
                         Harness the power of Machine Learning to predict energy consumption, 
@@ -1290,23 +1262,20 @@
                     </div>
                 </div>
                 
-                <!-- NEW THUNDER SYMBOL WITH ENERGY ICONS VISUALIZATION -->
+                <!-- Thunder Symbol Visualization -->
                 <div class="hero-visual">
                     <div class="energy-orbit-container">
-                        <!-- Central Thunder Symbol -->
                         <div class="thunder-core">
                             <div class="thunder-icon">⚡</div>
                         </div>
                         
-                        <!-- Inner Orbit Ring with Energy Icons -->
                         <div class="orbit-ring orbit-ring-1">
                             <div class="orbit-icon">💡</div>
                             <div class="orbit-icon">🔌</div>
                             <div class="orbit-icon">☀️</div>
-                            <div class="orbit-icon">🌐</div>
+                            <div class="orbit-icon">🌍</div>
                         </div>
                         
-                        <!-- Outer Orbit Ring with Cyan Dots -->
                         <div class="orbit-ring orbit-ring-2">
                             <div class="orbit-dot"></div>
                             <div class="orbit-dot"></div>
@@ -1377,71 +1346,71 @@
                     <div id="manualFormSection">
                         <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Input Parameters</h3>
                         <form id="predictionForm">
-                        <div class="form-group">
-                            <label class="form-label">Date & Time</label>
-                            <input type="datetime-local" class="form-input" id="timestamp" required>
-                        </div>
-                        
-                        <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label">Temperature (°C)</label>
-                                <input type="number" class="form-input" id="temperature" placeholder="e.g., 25" step="0.1" required>
+                                <label class="form-label">Date & Time</label>
+                                <input type="datetime-local" class="form-input" id="timestamp" required>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Humidity (%)</label>
-                                <input type="number" class="form-input" id="humidity" placeholder="e.g., 50" step="0.1" required>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Temperature (°C)</label>
+                                    <input type="number" class="form-input" id="temperature" placeholder="e.g., 25" step="0.1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Humidity (%)</label>
+                                    <input type="number" class="form-input" id="humidity" placeholder="e.g., 50" step="0.1" required>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Square Footage</label>
-                                <input type="number" class="form-input" id="squareFootage" placeholder="e.g., 1500" required>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Square Footage</label>
+                                    <input type="number" class="form-input" id="squareFootage" placeholder="e.g., 1500" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Occupancy</label>
+                                    <input type="number" class="form-input" id="occupancy" placeholder="e.g., 4" min="1" max="10" required>
+                                </div>
                             </div>
+                            
                             <div class="form-group">
-                                <label class="form-label">Occupancy</label>
-                                <input type="number" class="form-input" id="occupancy" placeholder="e.g., 4" min="1" max="10" required>
+                                <label class="form-label">Renewable Energy (kWh)</label>
+                                <input type="number" class="form-input" id="renewableEnergy" placeholder="e.g., 10" step="0.1" required>
                             </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Renewable Energy (kWh)</label>
-                            <input type="number" class="form-input" id="renewableEnergy" placeholder="e.g., 10" step="0.1" required>
-                        </div>
-                        
-                        <div class="form-row">
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">HVAC Usage</label>
+                                    <select class="form-select" id="hvacUsage" required>
+                                        <option value="">Select...</option>
+                                        <option value="On">On</option>
+                                        <option value="Off">Off</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Lighting Usage</label>
+                                    <select class="form-select" id="lightingUsage" required>
+                                        <option value="">Select...</option>
+                                        <option value="On">On</option>
+                                        <option value="Off">Off</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
                             <div class="form-group">
-                                <label class="form-label">HVAC Usage</label>
-                                <select class="form-select" id="hvacUsage" required>
+                                <label class="form-label">Holiday</label>
+                                <select class="form-select" id="holiday" required>
                                     <option value="">Select...</option>
-                                    <option value="On">On</option>
-                                    <option value="Off">Off</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Lighting Usage</label>
-                                <select class="form-select" id="lightingUsage" required>
-                                    <option value="">Select...</option>
-                                    <option value="On">On</option>
-                                    <option value="Off">Off</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Holiday</label>
-                            <select class="form-select" id="holiday" required>
-                                <option value="">Select...</option>
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-                            <i class="fas fa-magic"></i>
-                            Predict Energy Consumption
-                        </button>
-                    </form>
+                            
+                            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                                <i class="fas fa-magic"></i>
+                                Predict Energy Consumption
+                            </button>
+                        </form>
                     </div>
                 </div>
                 
@@ -1455,8 +1424,8 @@
         </div>
     </div>
     
-    <!-- AI Chatbot Tab -->
-    <div id="chatbot" class="tab-content">
+    <!-- Chat Tab -->
+    <div id="chat" class="tab-content">
         <div class="container">
             <div class="chatbot-container">
                 <div class="section-header">
@@ -1478,7 +1447,7 @@
                         </div>
                     </div>
                     
-                    <div class="chat-input-container" style="position: relative;">
+                    <div class="chat-input-container">
                         <button class="btn btn-voice" id="speakerButton" onclick="toggleAutoSpeak()" title="Toggle Auto-speak responses">
                             <i class="fas fa-volume-up" id="speakerIcon"></i>
                         </button>
@@ -1490,6 +1459,7 @@
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
+                    <div class="voice-indicator"></div>
                 </div>
             </div>
         </div>
@@ -1694,8 +1664,8 @@
         </div>
     </div>
     
-    <!-- Simple Round Robot Assistant in Corner -->
-    <div class="robot-assistant" onclick="showTab('chatbot')">
+    <!-- Robot Assistant -->
+    <div class="robot-assistant" onclick="showTab('chat')">
         <div class="robot-circle">
             <span class="robot-icon">🤖</span>
         </div>
@@ -1703,6 +1673,7 @@
     </div>
     
     <script>
+        // Global variables
         let currentRating = 5;
         let chatState = {
             mode: 'conversation',
@@ -1722,13 +1693,21 @@
             { key: 'Holiday', question: 'Last question! Is today a holiday? (Yes/No)', type: 'text', options: ['Yes', 'No'] }
         ];
         
+        // Tab navigation
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            if (event && event.target) {
-                event.target.closest('.nav-tab').classList.add('active');
-            }
+            
+            // Find and activate the corresponding nav button
+            const navButtons = document.querySelectorAll('.nav-tab');
+            navButtons.forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(tabName) || 
+                    btn.onclick.toString().includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            });
+            
             if (tabName === 'dashboard') setTimeout(initCharts, 100);
             if (tabName === 'reviews') loadReviews();
         }
@@ -1777,34 +1756,16 @@
         
         function displayResults(result) {
             const resultsCard = document.getElementById('resultsCard');
-            
-            // DEBUG: Log what we received
-            console.log('=== displayResults called ===');
-            console.log('Full result:', result);
-            console.log('result.prediction type:', typeof result.prediction);
-            console.log('result.prediction value:', result.prediction);
-            
-            // Handle both response formats:
-            // Manual entry: result = {prediction: 74.87, usage_level: "Normal", recommendations: [...], ...}
-            // File upload calls with: result.prediction = {prediction: 74.87, usage_level: "Normal", ...}
-            // So we need to check if 'prediction' is a number or object
             const data = (typeof result.prediction === 'object') ? result.prediction : result;
             
-            console.log('Using data:', data);
-            console.log('data.recommendations:', data.recommendations);
-            
-            // Build recommendations HTML
             let recommendationsHTML = '';
             if (data.recommendations && data.recommendations.length > 0) {
-                console.log('✓ Building recommendations HTML');
                 recommendationsHTML = `
                     <div class="recommendations">
                         <h4 style="color: var(--success); margin-bottom: 1rem;">💡 Recommendations</h4>
                         ${data.recommendations.map(rec => `<div class="recommendation-item">${rec}</div>`).join('')}
                     </div>
                 `;
-            } else {
-                console.log('❌ NO recommendations to display');
             }
             
             resultsCard.innerHTML = `
@@ -1832,7 +1793,114 @@
             `;
         }
         
-        // ===== GEMINI AI CHATBOT - NEW CODE =====
+        // File Upload Methods
+        function switchMethod(method) {
+            const manualBtn = document.getElementById('manualMethodBtn');
+            const fileBtn = document.getElementById('fileMethodBtn');
+            const manualSection = document.getElementById('manualFormSection');
+            const fileSection = document.getElementById('fileUploadSection');
+            const resultsCard = document.getElementById('resultsCard');
+            
+            if (method === 'manual') {
+                manualBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                manualSection.style.display = 'block';
+                fileSection.style.display = 'none';
+            } else {
+                fileBtn.classList.add('active');
+                manualBtn.classList.remove('active');
+                manualSection.style.display = 'none';
+                fileSection.style.display = 'block';
+                
+                document.getElementById('predictionForm').reset();
+                document.getElementById('dataFile').value = '';
+                document.getElementById('fileName').textContent = '';
+                
+                resultsCard.innerHTML = `
+                    <i class="fas fa-chart-line" style="font-size: 4rem; color: rgba(0, 240, 255, 0.3); margin-bottom: 1rem;"></i>
+                    <p class="results-placeholder">Your prediction results will appear here</p>
+                `;
+            }
+        }
+        
+        document.getElementById('dataFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || '';
+            document.getElementById('fileName').textContent = fileName ? `✓ Selected: ${fileName}` : '';
+        });
+        
+        async function uploadAndExtract() {
+            const fileInput = document.getElementById('dataFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('⚠️ Please select a file first');
+                return;
+            }
+            
+            const loadingDiv = document.getElementById('uploadLoading');
+            const resultsCard = document.getElementById('resultsCard');
+            loadingDiv.style.display = 'block';
+            resultsCard.innerHTML = '<div class="spinner"></div><p class="results-placeholder">Processing your file...</p>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('/api/extract-from-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                
+                if (result.success) {
+                    const manualSection = document.getElementById('manualFormSection');
+                    const fileSection = document.getElementById('fileUploadSection');
+                    
+                    fileSection.style.display = 'none';
+                    manualSection.style.display = 'block';
+                    
+                    document.getElementById('timestamp').value = result.data.timestamp || '';
+                    document.getElementById('temperature').value = result.data.Temperature || '';
+                    document.getElementById('humidity').value = result.data.Humidity || '';
+                    document.getElementById('squareFootage').value = result.data.SquareFootage || '';
+                    document.getElementById('occupancy').value = result.data.Occupancy || '';
+                    document.getElementById('renewableEnergy').value = result.data.RenewableEnergy || '';
+                    document.getElementById('hvacUsage').value = result.data.HVACUsage || '';
+                    document.getElementById('lightingUsage').value = result.data.LightingUsage || '';
+                    document.getElementById('holiday').value = result.data.Holiday || '';
+                    
+                    if (result.prediction) {
+                        displayResults(result.prediction);
+                    } else {
+                        resultsCard.innerHTML = `
+                            <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;"></i>
+                            <p style="color: var(--success); font-size: 1.2rem; font-weight: 600;">Data Extracted!</p>
+                            <p class="results-placeholder">Click "Predict" to generate energy forecast.</p>
+                        `;
+                    }
+                    
+                    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    const errorMsg = result.error || 'Failed to extract data from file';
+                    resultsCard.innerHTML = `
+                        <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <div class="error-message">${errorMsg}</div>
+                        <p class="results-placeholder" style="margin-top: 1rem;">Check server console for details</p>
+                    `;
+                }
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultsCard.innerHTML = `
+                    <i class="fas fa-times-circle" style="font-size: 4rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="error-message">Error: ${error.message}</div>
+                `;
+            }
+        }
+        
+        // Chatbot Functions
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
@@ -1840,7 +1908,6 @@
             
             const messagesContainer = document.getElementById('chatMessages');
             
-            // Add user message
             messagesContainer.innerHTML += `
                 <div class="message user">
                     <div class="message-content">${message}</div>
@@ -1850,7 +1917,6 @@
             input.value = '';
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
-            // Check if user wants to start prediction
             if (!chatState.collectingData && 
                 (message.toLowerCase().includes('predict') || 
                  message.toLowerCase().includes('calculate') ||
@@ -1859,32 +1925,26 @@
                 return;
             }
             
-            // If collecting data for prediction
             if (chatState.collectingData) {
                 handlePredictionStep(message);
                 return;
             }
             
-            // Otherwise, send to Gemini AI for conversation
             sendToGeminiAI(message);
         }
         
         function sendToGeminiAI(message) {
             const messagesContainer = document.getElementById('chatMessages');
-            
-            // Show loading
             const loadingId = 'loading-' + Date.now();
+            
             messagesContainer.innerHTML += `
                 <div class="message bot" id="${loadingId}">
                     <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                    <div class="message-content">
-                        <div class="spinner"></div>
-                    </div>
+                    <div class="message-content"><div class="spinner"></div></div>
                 </div>
             `;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
-            // Call backend chatbot endpoint
             fetch('/api/chatbot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1892,27 +1952,21 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Remove loading message
                 const loadingMsg = document.getElementById(loadingId);
                 if (loadingMsg) loadingMsg.remove();
                 
-                // Add AI response
                 const poweredBy = data.powered_by === 'gemini' ? 
                     '<br><br><span style="font-size: 0.75em; opacity: 0.6;">✨ Powered by Gemini AI</span>' : '';
                 
                 messagesContainer.innerHTML += `
                     <div class="message bot">
                         <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                        <div class="message-content">
-                            ${data.response}${poweredBy}
-                        </div>
+                        <div class="message-content">${data.response}${poweredBy}</div>
                     </div>
                 `;
                 
-                // Speak the response
                 speak(data.response);
                 
-                // Check if AI mentioned prediction to offer step-by-step
                 if (data.response.toLowerCase().includes('predict') || 
                     data.response.toLowerCase().includes('data')) {
                     chatState.mode = 'ask_prediction';
@@ -1927,9 +1981,7 @@
                 messagesContainer.innerHTML += `
                     <div class="message bot">
                         <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                        <div class="message-content">
-                            Sorry, I encountered an error: ${error.message}. Please try again!
-                        </div>
+                        <div class="message-content">Sorry, I encountered an error: ${error.message}. Please try again!</div>
                     </div>
                 `;
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -1945,15 +1997,11 @@
             messagesContainer.innerHTML += `
                 <div class="message bot">
                     <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                    <div class="message-content">
-                        ${predictionSteps[0].question}
-                    </div>
+                    <div class="message-content">${predictionSteps[0].question}</div>
                 </div>
             `;
             
-            // Speak the first question
             speak(predictionSteps[0].question);
-            
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
@@ -1971,13 +2019,9 @@
                         messagesContainer.innerHTML += `
                             <div class="message bot">
                                 <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                                <div class="message-content">
-                                    ${predictionSteps[chatState.step].question}
-                                </div>
+                                <div class="message-content">${predictionSteps[chatState.step].question}</div>
                             </div>
                         `;
-                        
-                        // Speak the next question
                         speak(predictionSteps[chatState.step].question);
                     } else {
                         makeChatbotPrediction();
@@ -1986,13 +2030,9 @@
                     messagesContainer.innerHTML += `
                         <div class="message bot">
                             <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                            <div class="message-content">
-                                Please enter a valid number. ${currentStep.question}
-                            </div>
+                            <div class="message-content">Please enter a valid number. ${currentStep.question}</div>
                         </div>
                     `;
-                    
-                    // Speak the error message
                     speak('Please enter a valid number. ' + currentStep.question);
                 }
             } else {
@@ -2008,13 +2048,9 @@
                         messagesContainer.innerHTML += `
                             <div class="message bot">
                                 <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                                <div class="message-content">
-                                    ${predictionSteps[chatState.step].question}
-                                </div>
+                                <div class="message-content">${predictionSteps[chatState.step].question}</div>
                             </div>
                         `;
-                        
-                        // Speak the next question
                         speak(predictionSteps[chatState.step].question);
                     } else {
                         makeChatbotPrediction();
@@ -2023,13 +2059,9 @@
                     messagesContainer.innerHTML += `
                         <div class="message bot">
                             <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                            <div class="message-content">
-                                Please answer: ${currentStep.options.join(' or ')}. ${currentStep.question}
-                            </div>
+                            <div class="message-content">Please answer: ${currentStep.options.join(' or ')}. ${currentStep.question}</div>
                         </div>
                     `;
-                    
-                    // Speak the error message
                     speak('Please answer: ' + currentStep.options.join(' or ') + '. ' + currentStep.question);
                 }
             }
@@ -2039,14 +2071,12 @@
         
         async function makeChatbotPrediction() {
             const messagesContainer = document.getElementById('chatMessages');
-            
             const loadingId = 'loading-' + Date.now();
+            
             messagesContainer.innerHTML += `
                 <div class="message bot" id="${loadingId}">
                     <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                    <div class="message-content">
-                        Calculating your energy prediction... <div class="spinner"></div>
-                    </div>
+                    <div class="message-content">Calculating your energy prediction... <div class="spinner"></div></div>
                 </div>
             `;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -2086,16 +2116,13 @@
                         </div>
                     `;
                     
-                    // Speak the prediction
-                    const predictionText = `Your energy prediction is ${result.prediction} kilowatt hours. Usage level is ${result.usage_level}. Efficiency score is ${result.efficiency_score} percent. ${result.recommendations && result.recommendations.length > 0 ? 'Here are some recommendations: ' + result.recommendations.join('. ') : ''}`;
+                    const predictionText = `Your energy prediction is ${result.prediction} kilowatt hours. Usage level is ${result.usage_level}. Efficiency score is ${result.efficiency_score} percent.`;
                     speak(predictionText);
                 } else {
                     messagesContainer.innerHTML += `
                         <div class="message bot">
                             <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                            <div class="message-content">
-                                Sorry, there was an error making the prediction. Please try again or use the Prediction tab!
-                            </div>
+                            <div class="message-content">Sorry, there was an error making the prediction. Please try again!</div>
                         </div>
                     `;
                 }
@@ -2106,9 +2133,7 @@
                 messagesContainer.innerHTML += `
                     <div class="message bot">
                         <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                        <div class="message-content">
-                            Error: ${error.message}. Please try again!
-                        </div>
+                        <div class="message-content">Error: ${error.message}. Please try again!</div>
                     </div>
                 `;
             }
@@ -2117,11 +2142,141 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
-        // Allow Enter key to send message
         document.getElementById('chatInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
-        // ===== END GEMINI AI CHATBOT CODE =====
+        
+        // Speech Recognition and TTS
+        let recognition = null;
+        let isListening = false;
+        let autoSpeak = true;
+        
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onstart = function() {
+                    isListening = true;
+                    document.getElementById('micButton').classList.add('active');
+                    document.getElementById('micIcon').classList.remove('fa-microphone');
+                    document.getElementById('micIcon').classList.add('fa-stop');
+                    showVoiceIndicator('Listening...');
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('chatInput').value = transcript;
+                    hideVoiceIndicator();
+                };
+                
+                recognition.onerror = function(event) {
+                    isListening = false;
+                    document.getElementById('micButton').classList.remove('active');
+                    document.getElementById('micIcon').classList.remove('fa-stop');
+                    document.getElementById('micIcon').classList.add('fa-microphone');
+                    hideVoiceIndicator();
+                };
+                
+                recognition.onend = function() {
+                    isListening = false;
+                    document.getElementById('micButton').classList.remove('active');
+                    document.getElementById('micIcon').classList.remove('fa-stop');
+                    document.getElementById('micIcon').classList.add('fa-microphone');
+                    hideVoiceIndicator();
+                };
+            }
+        }
+        
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                initSpeechRecognition();
+            }
+            
+            if (!recognition) {
+                alert('Speech recognition is not supported in your browser.');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+        
+        function showVoiceIndicator(text) {
+            let indicator = document.querySelector('.voice-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'voice-indicator';
+                document.querySelector('.chat-input-container').appendChild(indicator);
+            }
+            indicator.textContent = text;
+            indicator.style.display = 'block';
+        }
+        
+        function hideVoiceIndicator() {
+            const indicator = document.querySelector('.voice-indicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+        
+        function speak(text) {
+            if (!autoSpeak) return;
+            
+            window.speechSynthesis.cancel();
+            
+            const cleanText = text
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/[⚡📊⚙️⏰💡•✨]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            if (!cleanText) return;
+            
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            utterance.onstart = function() {
+                document.getElementById('speakerButton').classList.add('speaking');
+            };
+            
+            utterance.onend = function() {
+                document.getElementById('speakerButton').classList.remove('speaking');
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function toggleAutoSpeak() {
+            autoSpeak = !autoSpeak;
+            const speakerButton = document.getElementById('speakerButton');
+            const speakerIcon = document.getElementById('speakerIcon');
+            
+            if (autoSpeak) {
+                speakerButton.style.background = 'rgba(0, 240, 255, 0.1)';
+                speakerButton.style.borderColor = 'var(--primary)';
+                speakerIcon.classList.remove('fa-volume-mute');
+                speakerIcon.classList.add('fa-volume-up');
+                speak('Auto-speak enabled');
+            } else {
+                speakerButton.style.background = 'rgba(255, 0, 0, 0.1)';
+                speakerButton.style.borderColor = '#ff4444';
+                speakerIcon.classList.remove('fa-volume-up');
+                speakerIcon.classList.add('fa-volume-mute');
+                window.speechSynthesis.cancel();
+            }
+        }
+        
+        setTimeout(initSpeechRecognition, 500);
         
         // Reviews
         document.querySelectorAll('.star').forEach(star => {
@@ -2256,304 +2411,6 @@
         
         // Set default datetime
         document.getElementById('timestamp').value = new Date().toISOString().slice(0, 16);
-    
-        // ===== FILE UPLOAD FEATURE =====
-        
-        // Show selected filename
-        document.getElementById('dataFile').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || '';
-            document.getElementById('fileName').textContent = fileName ? `✓ Selected: ${fileName}` : '';
-        });
-        
-        // Switch between manual and file upload methods
-        function switchMethod(method) {
-            const manualBtn = document.getElementById('manualMethodBtn');
-            const fileBtn = document.getElementById('fileMethodBtn');
-            const manualSection = document.getElementById('manualFormSection');
-            const fileSection = document.getElementById('fileUploadSection');
-            const resultsCard = document.getElementById('resultsCard');
-            
-            if (method === 'manual') {
-                manualBtn.classList.add('active');
-                fileBtn.classList.remove('active');
-                manualSection.style.display = 'block';
-                fileSection.style.display = 'none';
-            } else {
-                // Switching to file upload method
-                fileBtn.classList.add('active');
-                manualBtn.classList.remove('active');
-                manualSection.style.display = 'none';
-                fileSection.style.display = 'block';
-                
-                // Clear form and results when switching to file upload
-                document.getElementById('predictionForm').reset();
-                document.getElementById('dataFile').value = '';
-                document.getElementById('fileName').textContent = '';
-                
-                // Reset results display
-                resultsCard.innerHTML = `
-                    <i class="fas fa-chart-line" style="font-size: 4rem; color: rgba(0, 240, 255, 0.3); margin-bottom: 1rem;"></i>
-                    <p class="results-placeholder">Your prediction results will appear here</p>
-                `;
-            }
-        }
-        
-        // Upload and extract data from file
-        async function uploadAndExtract() {
-            const fileInput = document.getElementById('dataFile');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('⚠️ Please select a file first');
-                return;
-            }
-            
-            const loadingDiv = document.getElementById('uploadLoading');
-            const resultsCard = document.getElementById('resultsCard');
-            loadingDiv.style.display = 'block';
-            resultsCard.innerHTML = '<div class="spinner"></div><p class="results-placeholder">Processing your file...</p>';
-            
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                const response = await fetch('/api/extract-from-file', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                loadingDiv.style.display = 'none';
-                
-                if (result.success) {
-                    // Keep file upload section visible but also show manual form
-                    const manualSection = document.getElementById('manualFormSection');
-                    const fileSection = document.getElementById('fileUploadSection');
-                    
-                    // Hide file upload section, show manual form
-                    fileSection.style.display = 'none';
-                    manualSection.style.display = 'block';
-                    
-                    // But keep File Upload button active (don't switch tabs)
-                    // This shows the data came from file upload
-                    
-                    // Auto-fill form with extracted data (including timestamp from backend)
-                    document.getElementById('timestamp').value = result.data.timestamp || '';
-                    document.getElementById('temperature').value = result.data.Temperature || '';
-                    document.getElementById('humidity').value = result.data.Humidity || '';
-                    document.getElementById('squareFootage').value = result.data.SquareFootage || '';
-                    document.getElementById('occupancy').value = result.data.Occupancy || '';
-                    document.getElementById('renewableEnergy').value = result.data.RenewableEnergy || '';
-                    document.getElementById('hvacUsage').value = result.data.HVACUsage || '';
-                    document.getElementById('lightingUsage').value = result.data.LightingUsage || '';
-                    document.getElementById('holiday').value = result.data.Holiday || '';
-                    
-                    // Display prediction results immediately (no need to click predict)
-                    if (result.prediction) {
-                        displayResults(result.prediction);
-                    } else {
-                        resultsCard.innerHTML = `
-                            <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;"></i>
-                            <p style="color: var(--success); font-size: 1.2rem; font-weight: 600;">Data Extracted!</p>
-                            <p class="results-placeholder">Click "Predict" to generate energy forecast.</p>
-                        `;
-                    }
-                    
-                    // Scroll to results
-                    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    
-                } else {
-                    const errorMsg = result.error || 'Failed to extract data from file';
-                    console.error('Backend error:', result);
-                    
-                    resultsCard.innerHTML = `
-                        <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                        <div class="error-message">${errorMsg}</div>
-                        <p class="results-placeholder" style="margin-top: 1rem;">
-                            Possible issues:<br>
-                            • File may not contain energy parameters<br>
-                            • File format not readable<br>
-                            • Gemini AI extraction failed<br><br>
-                            Check server console for details
-                        </p>
-                    `;
-                }
-                
-            } catch (error) {
-                loadingDiv.style.display = 'none';
-                resultsCard.innerHTML = `
-                    <i class="fas fa-times-circle" style="font-size: 4rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                    <div class="error-message">Error: ${error.message}</div>
-                    <p class="results-placeholder" style="margin-top: 1rem;">Please check your connection and try again.</p>
-                `;
-            }
-        }
-        
-
-    
-        
-        // ===== SPEECH-TO-TEXT & TEXT-TO-SPEECH FUNCTIONALITY =====
-        
-        let recognition = null;
-        let isListening = false;
-        let autoSpeak = true;
-        
-        function initSpeechRecognition() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = 'en-US';
-                
-                recognition.onstart = function() {
-                    console.log('🎤 Voice recognition started');
-                    isListening = true;
-                    document.getElementById('micButton').classList.add('active');
-                    document.getElementById('micIcon').classList.remove('fa-microphone');
-                    document.getElementById('micIcon').classList.add('fa-stop');
-                    showVoiceIndicator('Listening...');
-                };
-                
-                recognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    console.log('📝 Recognized:', transcript);
-                    document.getElementById('chatInput').value = transcript;
-                    hideVoiceIndicator();
-                };
-                
-                recognition.onerror = function(event) {
-                    console.error('❌ Speech recognition error:', event.error);
-                    isListening = false;
-                    document.getElementById('micButton').classList.remove('active');
-                    document.getElementById('micIcon').classList.remove('fa-stop');
-                    document.getElementById('micIcon').classList.add('fa-microphone');
-                    hideVoiceIndicator();
-                    
-                    if (event.error === 'no-speech') {
-                        alert('No speech detected. Please try again.');
-                    } else if (event.error === 'not-allowed') {
-                        alert('Microphone access denied. Please allow microphone access.');
-                    }
-                };
-                
-                recognition.onend = function() {
-                    console.log('🎤 Voice recognition ended');
-                    isListening = false;
-                    document.getElementById('micButton').classList.remove('active');
-                    document.getElementById('micIcon').classList.remove('fa-stop');
-                    document.getElementById('micIcon').classList.add('fa-microphone');
-                    hideVoiceIndicator();
-                };
-            }
-        }
-        
-        function toggleSpeechRecognition() {
-            if (!recognition) {
-                initSpeechRecognition();
-            }
-            
-            if (!recognition) {
-                alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
-                return;
-            }
-            
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.start();
-            }
-        }
-        
-        function showVoiceIndicator(text) {
-            let indicator = document.querySelector('.voice-indicator');
-            if (!indicator) {
-                indicator = document.createElement('div');
-                indicator.className = 'voice-indicator';
-                document.querySelector('.chat-input-container').appendChild(indicator);
-            }
-            indicator.textContent = text;
-            indicator.style.display = 'block';
-        }
-        
-        function hideVoiceIndicator() {
-            const indicator = document.querySelector('.voice-indicator');
-            if (indicator) {
-                indicator.style.display = 'none';
-            }
-        }
-        
-        function speak(text) {
-            if (!autoSpeak) return;
-            
-            window.speechSynthesis.cancel();
-            
-            const cleanText = text
-                .replace(/<[^>]*>/g, ' ')
-                .replace(/[⚡📊⚙️⏰💡•✨]/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-            
-            if (!cleanText) return;
-            
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.rate = 0.9;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            const voices = window.speechSynthesis.getVoices();
-            const goodVoice = voices.find(voice => 
-                voice.lang.startsWith('en') && 
-                (voice.name.includes('Google') || voice.name.includes('Microsoft'))
-            ) || voices.find(voice => voice.lang.startsWith('en'));
-            
-            if (goodVoice) {
-                utterance.voice = goodVoice;
-            }
-            
-            utterance.onstart = function() {
-                document.getElementById('speakerButton').classList.add('speaking');
-            };
-            
-            utterance.onend = function() {
-                document.getElementById('speakerButton').classList.remove('speaking');
-            };
-            
-            window.speechSynthesis.speak(utterance);
-        }
-        
-        function toggleAutoSpeak() {
-            autoSpeak = !autoSpeak;
-            const speakerButton = document.getElementById('speakerButton');
-            const speakerIcon = document.getElementById('speakerIcon');
-            
-            if (autoSpeak) {
-                speakerButton.style.background = 'rgba(0, 240, 255, 0.1)';
-                speakerButton.style.borderColor = 'var(--primary)';
-                speakerIcon.classList.remove('fa-volume-mute');
-                speakerIcon.classList.add('fa-volume-up');
-                speak('Auto-speak enabled');
-            } else {
-                speakerButton.style.background = 'rgba(255, 0, 0, 0.1)';
-                speakerButton.style.borderColor = '#ff4444';
-                speakerIcon.classList.remove('fa-volume-up');
-                speakerIcon.classList.add('fa-volume-mute');
-                window.speechSynthesis.cancel();
-            }
-        }
-        
-        window.speechSynthesis.onvoiceschanged = function() {
-            console.log('🔊 Voices loaded');
-        };
-        
-        // Initialize on page load
-        setTimeout(initSpeechRecognition, 500);
-        
-        // ===== END SPEECH FUNCTIONALITY =====
-
-
     </script>
 </body>
 </html>
