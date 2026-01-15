@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Analysis & Prediction</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --secondary: #ff006e;
+            --accent: #8338ec;
+            --dark: #0a0e27;
+            --darker: #050816;
+            --light: #f0f4f8;
+            --success: #06ffa5;
+            --warning: #ffbe0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--darker);
+            color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--darker);
+        }
+        
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(131, 56, 236, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 50%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
+        
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, -50px); }
+        }
+        
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+            padding: 0 2rem;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--light);
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .nav-tab:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(131, 56, 236, 0.1));
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Hero Section - WITH NEW THUNDER SYMBOL */
+        .hero {
+            min-height: 75vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4rem;
+            padding: 2rem 0;
+        }
+        
+        .hero-content {
+            flex: 1;
+        }
+        
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: slideUp 0.8s ease;
+            letter-spacing: -1px;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            animation: slideUp 0.8s ease 0.2s both;
+        }
+        
+        .hero-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s ease 0.4s both;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(0, 240, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            background: rgba(0, 240, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .feature-item i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            animation: slideUp 0.8s ease 0.6s both;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--darker);
+            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 240, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--light);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 240, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        /* Thunder Symbol with Energy Icons - NEW DESIGN */
+        .hero-visual {
+            flex: 1;
+            position: relative;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .energy-orbit-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: containerFloat 4s ease-in-out infinite;
+        }
+        
+        @keyframes containerFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        /* Central Thunder Symbol */
+        .thunder-core {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(131, 56, 236, 0.6) 0%, rgba(0, 240, 255, 0.3) 40%, transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: coreGlow 3s ease-in-out infinite;
+            box-shadow: 0 0 80px rgba(0, 240, 255, 0.4), inset 0 0 60px rgba(131, 56, 236, 0.3);
+            border: 2px solid rgba(0, 240, 255, 0.3);
+        }
+        
+        @keyframes coreGlow {
+            0%, 100% { 
+                box-shadow: 0 0 80px rgba(0, 240, 255, 0.4), inset 0 0 60px rgba(131, 56, 236, 0.3);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 120px rgba(131, 56, 236, 0.6), inset 0 0 80px rgba(0, 240, 255, 0.4);
+                transform: scale(1.05);
+            }
+        }
+        
+        .thunder-icon {
+            font-size: 7rem;
+            background: linear-gradient(135deg, #4dd0e1 0%, #00bcd4 50%, #0097a7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: thunderPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.8));
+        }
+        
+        @keyframes thunderPulse {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg);
+                filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.8));
+            }
+            50% { 
+                transform: scale(1.08) rotate(0deg);
+                filter: drop-shadow(0 0 40px rgba(131, 56, 236, 0.9));
+            }
+        }
+        
+        /* Orbiting Rings */
+        .orbit-ring {
+            position: absolute;
+            border: 1.5px solid rgba(0, 240, 255, 0.25);
+            border-radius: 50%;
+            animation: orbitRotate 20s linear infinite;
+        }
+        
+        .orbit-ring-1 {
+            width: 300px;
+            height: 300px;
+            animation-duration: 20s;
+        }
+        
+        .orbit-ring-2 {
+            width: 400px;
+            height: 400px;
+            animation-duration: 30s;
+            animation-direction: reverse;
+        }
+        
+        @keyframes orbitRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Energy Icons on Inner Orbit */
+        .orbit-icon {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.8), rgba(0, 188, 212, 0.9));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+            animation: iconPulse 2s ease-in-out infinite;
+            border: 2px solid rgba(0, 240, 255, 0.4);
+        }
+        
+        @keyframes iconPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+            }
+            50% { 
+                transform: scale(1.15);
+                box-shadow: 0 0 35px rgba(0, 240, 255, 0.9);
+            }
+        }
+        
+        /* Inner orbit icons (4 energy-related icons) */
+        .orbit-ring-1 .orbit-icon:nth-child(1) {
+            top: -20px;
+            left: 50%;
+            margin-left: -20px;
+            animation-delay: 0s;
+        }
+        
+        .orbit-ring-1 .orbit-icon:nth-child(2) {
+            top: 50%;
+            right: -20px;
+            margin-top: -20px;
+            animation-delay: 0.5s;
+        }
+        
+        .orbit-ring-1 .orbit-icon:nth-child(3) {
+            bottom: -20px;
+            left: 50%;
+            margin-left: -20px;
+            animation-delay: 1s;
+        }
+        
+        .orbit-ring-1 .orbit-icon:nth-child(4) {
+            top: 50%;
+            left: -20px;
+            margin-top: -20px;
+            animation-delay: 1.5s;
+        }
+        
+        /* Outer orbit cyan dots */
+        .orbit-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--primary);
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes dotPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% { 
+                transform: scale(1.3);
+                opacity: 1;
+            }
+        }
+        
+        /* Outer orbit - 8 dots positioned around */
+        .orbit-ring-2 .orbit-dot:nth-child(1) {
+            top: -5px;
+            left: 50%;
+            margin-left: -5px;
+            animation-delay: 0s;
+        }
+        
+        .orbit-ring-2 .orbit-dot:nth-child(2) {
+            top: 15%;
+            right: 15%;
+            animation-delay: 0.25s;
+        }
+        
+        .orbit-ring-2 .orbit-dot:nth-child(3) {
+            top: 50%;
+            right: -5px;
+            margin-top: -5px;
+            animation-delay: 0.5s;
+        }
+        
+        .orbit-ring-2 .orbit-dot:nth-child(4) {
+            bottom: 15%;
+            right: 15%;
+            animation-delay: 0.75s;
+        }
+        
+        .orbit-ring-2 .orbit-dot:nth-child(5) {
+            bottom: -5px;
+            left: 50%;
+            margin-left: -5px;
+            animation-delay: 1s;
+        }
+        
+        .orbit-ring-2 .orbit-dot:nth-child(6) {
+            bottom: 15%;
+            left: 15%;
+            animation-delay: 1.25s;
+        }
+        
+        .orbit-ring-2 .orbit-dot:nth-child(7) {
+            top: 50%;
+            left: -5px;
+            margin-top: -5px;
+            animation-delay: 1.5s;
+        }
+        
+        .orbit-ring-2 .orbit-dot:nth-child(8) {
+            top: 15%;
+            left: 15%;
+            animation-delay: 1.75s;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-description {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Prediction Section */
+        .prediction-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .form-card, .results-card {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+            font-weight: 500;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 12px;
+            color: var(--light);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .results-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 400px;
+        }
+        
+        .results-placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 1.1rem;
+        }
+        
+        .result-value {
+            font-size: 4rem;
+            font-weight: 800;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1rem 0;
+        }
+        
+        .result-label {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 2rem;
+        }
+        
+        .result-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin-top: 2rem;
+        }
+        
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.25rem;
+        }
+        
+        .recommendations {
+            margin-top: 2rem;
+            width: 100%;
+        }
+        
+        .recommendation-item {
+            background: rgba(6, 255, 165, 0.1);
+            border-left: 3px solid var(--success);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+        
+        /* Chatbot Section */
+        .chatbot-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        
+        .chat-window {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--darker);
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 12px;
+            color: var(--light);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Dashboard Section */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .chart-card {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        
+        /* About Section */
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .about-card {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+        }
+        
+        .about-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .about-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1rem;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .tech-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .tech-item:hover {
+            background: rgba(0, 240, 255, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .tech-item i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Guide Section */
+        .guide-steps {
+            display: grid;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .step-card {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .step-content h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* API Section */
+        .api-section {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .api-placeholder {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 24px;
+            padding: 4rem;
+            text-align: center;
+        }
+        
+        .api-placeholder h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .api-placeholder p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Review Section */
+        .review-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .review-form {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .star {
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .star:hover, .star.active {
+            color: var(--warning);
+        }
+        
+        .reviews-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .review-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .review-author {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .review-rating {
+            color: var(--warning);
+        }
+        
+        /* SIMPLE ROUND ROBOT ASSISTANT IN CORNER */
+        .robot-assistant {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            animation: robotHover 3s ease-in-out infinite;
+        }
+        
+        .robot-assistant:hover {
+            transform: scale(1.15);
+        }
+        
+        @keyframes robotHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .robot-circle {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 30px rgba(0, 240, 255, 0.5);
+            animation: circlePulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes circlePulse {
+            0%, 100% { box-shadow: 0 8px 30px rgba(0, 240, 255, 0.5); }
+            50% { box-shadow: 0 8px 40px rgba(131, 56, 236, 0.7); }
+        }
+        
+        .robot-circle::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            animation: ripple 2s ease-out infinite;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        .robot-icon {
+            font-size: 2.5rem;
+            z-index: 1;
+        }
+        
+        .robot-tooltip {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .robot-assistant:hover .robot-tooltip {
+            opacity: 1;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(0, 240, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: var(--secondary);
+            background: rgba(255, 0, 110, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero {
+                flex-direction: column;
+            }
+            
+            .prediction-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-features {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-stack {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Logout Button */
+        .logout-button {
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--darker);
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+        }
+        
+        .logout-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+        
+        /* File Upload Styles */
+        .method-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .method-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .method-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--darker);
+        }
+        
+        .method-btn:not(.active) {
+            background: rgba(0, 240, 255, 0.1);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .method-btn:hover:not(.active) {
+            background: rgba(0, 240, 255, 0.2);
+        }
+        
+        .file-upload-section {
+            padding: 2rem;
+            background: rgba(0, 240, 255, 0.05);
+            border-radius: 16px;
+            border: 2px dashed var(--primary);
+            margin-bottom: 2rem;
+        }
+        
+        .file-upload-section h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    
+        /* Voice Input Buttons */
+        .btn-voice {
+            padding: 0.75rem;
+            background: rgba(0, 240, 255, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+        }
+        
+        .btn-voice:hover {
+            background: rgba(0, 240, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn-voice.active {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .btn-voice.speaking {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .voice-indicator {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            animation: slideDown 0.3s ease;
+            display: none;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                Smart Energy AI
+            </div>
+            
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('home')">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <button class="nav-tab" onclick="showTab('prediction')">
+                    <i class="fas fa-chart-line"></i> Prediction
+                </button>
+                <button class="nav-tab" onclick="showTab('chatbot')">
+                    <i class="fas fa-robot"></i> AI Chat
+                </button>
+                <button class="nav-tab" onclick="showTab('dashboard')">
+                    <i class="fas fa-chart-bar"></i> Dashboard
+                </button>
+                <button class="nav-tab" onclick="showTab('about')">
+                    <i class="fas fa-info-circle"></i> About
+                </button>
+                <button class="nav-tab" onclick="showTab('guide')">
+                    <i class="fas fa-book"></i> Guide
+                </button>
+
+                <button class="nav-tab" onclick="showTab('reviews')">
+                    <i class="fas fa-star"></i> Reviews
+                </button>
+            </div>
+            
+            <div class="user-actions">
+                <span class="user-info">
+                    Welcome, {{ username }}!
+                </span>
+                <a href="/logout" class="logout-button">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Home Tab WITH NEW THUNDER SYMBOL -->
+    <div id="home" class="tab-content active">
+        <div class="container">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 class="hero-title">Smart Energy Analysis & Prediction</h1>
+                    <p class="hero-subtitle">
+                        Harness the power of Machine Learning to predict energy consumption, 
+                        optimize usage, and reduce costs with device-level insights.
+                    </p>
+                    
+                    <div class="hero-features">
+                        <div class="feature-item">
+                            <i class="fas fa-brain"></i>
+                            <span>AI-Powered Predictions</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Real-time Analytics</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-leaf"></i>
+                            <span>Energy Optimization</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Smart Recommendations</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cta-buttons">
+                        <button class="btn btn-primary" onclick="showTab('prediction')">
+                            <i class="fas fa-rocket"></i>
+                            Get Started
+                        </button>
+                        <button class="btn btn-secondary" onclick="showTab('guide')">
+                            <i class="fas fa-play"></i>
+                            Watch Demo
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- NEW THUNDER SYMBOL WITH ENERGY ICONS VISUALIZATION -->
+                <div class="hero-visual">
+                    <div class="energy-orbit-container">
+                        <!-- Central Thunder Symbol -->
+                        <div class="thunder-core">
+                            <div class="thunder-icon">⚡</div>
+                        </div>
+                        
+                        <!-- Inner Orbit Ring with Energy Icons -->
+                        <div class="orbit-ring orbit-ring-1">
+                            <div class="orbit-icon">💡</div>
+                            <div class="orbit-icon">🔌</div>
+                            <div class="orbit-icon">☀️</div>
+                            <div class="orbit-icon">🌐</div>
+                        </div>
+                        
+                        <!-- Outer Orbit Ring with Cyan Dots -->
+                        <div class="orbit-ring orbit-ring-2">
+                            <div class="orbit-dot"></div>
+                            <div class="orbit-dot"></div>
+                            <div class="orbit-dot"></div>
+                            <div class="orbit-dot"></div>
+                            <div class="orbit-dot"></div>
+                            <div class="orbit-dot"></div>
+                            <div class="orbit-dot"></div>
+                            <div class="orbit-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Prediction Tab -->
+    <div id="prediction" class="tab-content">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Energy Consumption Prediction</h2>
+                <p class="section-description">
+                    Enter your parameters to get accurate predictions and personalized recommendations
+                </p>
+            </div>
+            
+            <div class="prediction-container">
+                <div class="form-card">
+                    <!-- Method Selector -->
+                    <div class="method-selector">
+                        <button type="button" class="method-btn active" id="manualMethodBtn" onclick="switchMethod('manual')">
+                            ✏️ Manual Entry
+                        </button>
+                        <button type="button" class="method-btn" id="fileMethodBtn" onclick="switchMethod('file')">
+                            📁 Upload File
+                        </button>
+                    </div>
+                    
+                    <!-- File Upload Section -->
+                    <div class="file-upload-section" id="fileUploadSection" style="display: none;">
+                        <h4>
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Upload Energy Data File
+                        </h4>
+                        <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                            Supported formats: PDF, TXT, DOC, DOCX, CSV (Max 16MB)
+                        </p>
+                        <input type="file" id="dataFile" accept=".pdf,.txt,.doc,.docx,.csv" style="display: none;">
+                        <button type="button" onclick="document.getElementById('dataFile').click()" class="btn btn-secondary" style="margin-right: 1rem;">
+                            <i class="fas fa-file-upload"></i> Choose File
+                        </button>
+                        <button type="button" onclick="uploadAndExtract()" class="btn btn-primary">
+                            <i class="fas fa-magic"></i> Upload & Extract Data
+                        </button>
+                        <p id="fileName" style="margin-top: 1rem; color: var(--success); font-size: 0.9rem;"></p>
+                        <div id="uploadLoading" style="display: none; margin-top: 1.5rem; text-align: center; padding: 2rem; background: rgba(0,0,0,0.3); border-radius: 12px;">
+                            <div class="spinner"></div>
+                            <p style="color: var(--primary); margin-top: 1rem; font-size: 1.1rem; font-weight: 600;">
+                                🤖 Processing your request...
+                            </p>
+                            <p style="color: rgba(255,255,255,0.6); margin-top: 0.5rem; font-size: 0.9rem;">
+                                Extracting data from file using AI
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Manual Form Section -->
+                    <div id="manualFormSection">
+                        <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Input Parameters</h3>
+                        <form id="predictionForm">
+                        <div class="form-group">
+                            <label class="form-label">Date & Time</label>
+                            <input type="datetime-local" class="form-input" id="timestamp" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Temperature (°C)</label>
+                                <input type="number" class="form-input" id="temperature" placeholder="e.g., 25" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Humidity (%)</label>
+                                <input type="number" class="form-input" id="humidity" placeholder="e.g., 50" step="0.1" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Square Footage</label>
+                                <input type="number" class="form-input" id="squareFootage" placeholder="e.g., 1500" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Occupancy</label>
+                                <input type="number" class="form-input" id="occupancy" placeholder="e.g., 4" min="1" max="10" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Renewable Energy (kWh)</label>
+                            <input type="number" class="form-input" id="renewableEnergy" placeholder="e.g., 10" step="0.1" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">HVAC Usage</label>
+                                <select class="form-select" id="hvacUsage" required>
+                                    <option value="">Select...</option>
+                                    <option value="On">On</option>
+                                    <option value="Off">Off</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Lighting Usage</label>
+                                <select class="form-select" id="lightingUsage" required>
+                                    <option value="">Select...</option>
+                                    <option value="On">On</option>
+                                    <option value="Off">Off</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Holiday</label>
+                            <select class="form-select" id="holiday" required>
+                                <option value="">Select...</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                            <i class="fas fa-magic"></i>
+                            Predict Energy Consumption
+                        </button>
+                    </form>
+                    </div>
+                </div>
+                
+                <div class="results-card" id="resultsCard">
+                    <i class="fas fa-chart-line" style="font-size: 4rem; color: rgba(0, 240, 255, 0.3); margin-bottom: 1rem;"></i>
+                    <p class="results-placeholder">
+                        Your prediction results will appear here
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Chatbot Tab -->
+    <div id="chatbot" class="tab-content">
+        <div class="container">
+            <div class="chatbot-container">
+                <div class="section-header">
+                    <h2 class="section-title">AI Energy Assistant</h2>
+                    <p class="section-description">
+                        Chat with our AI to get personalized energy predictions
+                    </p>
+                </div>
+                
+                <div class="chat-window">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                Hello! I'm your Smart Energy AI Assistant. I can help you predict energy consumption. Would you like to start? Just say "yes" or "calculate energy"!
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container" style="position: relative;">
+                        <button class="btn btn-voice" id="speakerButton" onclick="toggleAutoSpeak()" title="Toggle Auto-speak responses">
+                            <i class="fas fa-volume-up" id="speakerIcon"></i>
+                        </button>
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Type or speak your message...">
+                        <button class="btn btn-voice" id="micButton" onclick="toggleSpeechRecognition()" title="Voice Input (Click to speak)">
+                            <i class="fas fa-microphone" id="micIcon"></i>
+                        </button>
+                        <button class="btn btn-primary" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-content">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Energy Analytics Dashboard</h2>
+                <p class="section-description">
+                    Visualize energy patterns and insights from your data
+                </p>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="chart-card">
+                    <h3 class="chart-title">Energy Consumption Trend</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <h3 class="chart-title">Device Breakdown</h3>
+                    <canvas id="deviceChart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <h3 class="chart-title">Temperature vs Energy</h3>
+                    <canvas id="tempChart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <h3 class="chart-title">Occupancy Impact</h3>
+                    <canvas id="occupancyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- About Tab -->
+    <div id="about" class="tab-content">
+        <div class="container">
+            <div class="about-content">
+                <div class="section-header">
+                    <h2 class="section-title">About This Project</h2>
+                </div>
+                
+                <div class="about-card">
+                    <h3 class="about-title">What We Do</h3>
+                    <p class="about-text">
+                        Our Smart Energy Analysis and Prediction system leverages advanced machine learning 
+                        algorithms to predict energy consumption patterns with remarkable accuracy. By analyzing 
+                        multiple factors including temperature, occupancy, HVAC usage, and temporal patterns, 
+                        we provide actionable insights to optimize energy usage.
+                    </p>
+                </div>
+                
+                <div class="about-card">
+                    <h3 class="about-title">Key Features</h3>
+                    <p class="about-text">
+                        ✨ <strong>ML-Powered Predictions:</strong> Using Gradient Boosting algorithm<br><br>
+                        📊 <strong>Device-Level Insights:</strong> Understand appliance contributions<br><br>
+                        🎯 <strong>Personalized Recommendations:</strong> Tailored suggestions<br><br>
+                        🤖 <strong>AI Chatbot:</strong> Interactive predictions<br><br>
+                        📈 <strong>Visual Analytics:</strong> Comprehensive dashboards
+                    </p>
+                </div>
+                
+                <div class="about-card">
+                    <h3 class="about-title">Technology Stack</h3>
+                    <div class="tech-stack">
+                        <div class="tech-item">
+                            <i class="fab fa-python"></i>
+                            <div>Python</div>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-brain"></i>
+                            <div>Scikit-learn</div>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-flask"></i>
+                            <div>Flask</div>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <div>Chart.js</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Guide Tab -->
+    <div id="guide" class="tab-content">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How to Use This Platform</h2>
+                <p class="section-description">
+                    Follow these simple steps to get started
+                </p>
+            </div>
+            
+            <div class="guide-steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Navigate to Prediction Tab</h3>
+                        <p>Click on the "Prediction" tab to access the prediction interface.</p>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Enter Your Data</h3>
+                        <p>Fill in all required fields including temperature, humidity, occupancy, and device usage.</p>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Get Predictions</h3>
+                        <p>Click "Predict" to receive instant predictions with recommendations.</p>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Use AI Chatbot</h3>
+                        <p>Visit AI Chat tab for a conversational prediction experience.</p>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Analyze Dashboard</h3>
+                        <p>View comprehensive analytics in the Dashboard tab.</p>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h3>Share Feedback</h3>
+                        <p>Help us improve by sharing your experience in Reviews!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reviews Tab -->
+    <div id="reviews" class="tab-content">
+        <div class="container">
+            <div class="review-container">
+                <div class="section-header">
+                    <h2 class="section-title">User Reviews</h2>
+                    <p class="section-description">
+                        Share your experience with our platform
+                    </p>
+                </div>
+                
+                <div class="review-form">
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Leave a Review</h3>
+                    <form id="reviewForm">
+                        <div class="form-group">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" class="form-input" id="reviewName" placeholder="John Doe" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Rating</label>
+                            <div class="rating-stars" id="ratingStars">
+                                <span class="star" data-rating="1">★</span>
+                                <span class="star" data-rating="2">★</span>
+                                <span class="star" data-rating="3">★</span>
+                                <span class="star" data-rating="4">★</span>
+                                <span class="star" data-rating="5">★</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Your Review</label>
+                            <textarea class="form-input" id="reviewComment" rows="4" placeholder="Share your thoughts..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="reviews-list" id="reviewsList">
+                    <!-- Reviews will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Simple Round Robot Assistant in Corner -->
+    <div class="robot-assistant" onclick="showTab('chatbot')">
+        <div class="robot-circle">
+            <span class="robot-icon">🤖</span>
+        </div>
+        <div class="robot-tooltip">Need help? Chat with me!</div>
+    </div>
+    
+    <script>
+        let currentRating = 5;
+        let chatState = {
+            mode: 'conversation',
+            collectingData: false,
+            step: 0,
+            data: {}
+        };
+        
+        const predictionSteps = [
+            { key: 'Temperature', question: 'Great! Let\'s start. What is the current temperature in Celsius? (e.g., 25)', type: 'number' },
+            { key: 'Humidity', question: 'Perfect! Now, what is the humidity percentage? (e.g., 50)', type: 'number' },
+            { key: 'SquareFootage', question: 'Thanks! What is the square footage? (e.g., 1500)', type: 'number' },
+            { key: 'Occupancy', question: 'Got it! How many people are present? (1-10)', type: 'number' },
+            { key: 'RenewableEnergy', question: 'Excellent! Renewable energy in kWh? (e.g., 10)', type: 'number' },
+            { key: 'HVACUsage', question: 'Almost done! Is HVAC On or Off?', type: 'text', options: ['On', 'Off'] },
+            { key: 'LightingUsage', question: 'Great! Is lighting On or Off?', type: 'text', options: ['On', 'Off'] },
+            { key: 'Holiday', question: 'Last question! Is today a holiday? (Yes/No)', type: 'text', options: ['Yes', 'No'] }
+        ];
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            if (event && event.target) {
+                event.target.closest('.nav-tab').classList.add('active');
+            }
+            if (tabName === 'dashboard') setTimeout(initCharts, 100);
+            if (tabName === 'reviews') loadReviews();
+        }
+        
+        // Prediction Form
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                timestamp: document.getElementById('timestamp').value,
+                Temperature: parseFloat(document.getElementById('temperature').value),
+                Humidity: parseFloat(document.getElementById('humidity').value),
+                SquareFootage: parseInt(document.getElementById('squareFootage').value),
+                Occupancy: parseInt(document.getElementById('occupancy').value),
+                RenewableEnergy: parseFloat(document.getElementById('renewableEnergy').value),
+                HVACUsage: document.getElementById('hvacUsage').value,
+                LightingUsage: document.getElementById('lightingUsage').value,
+                Holiday: document.getElementById('holiday').value
+            };
+            
+            const resultsCard = document.getElementById('resultsCard');
+            resultsCard.innerHTML = '<div class="spinner"></div>';
+            
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayResults(result);
+                } else {
+                    resultsCard.innerHTML = `<div class="error-message">Error: ${result.error || 'Unknown error occurred'}</div>`;
+                }
+            } catch (error) {
+                resultsCard.innerHTML = `<div class="error-message">Error: ${error.message}. Make sure the server is running!</div>`;
+            }
+        });
+        
+        function displayResults(result) {
+            const resultsCard = document.getElementById('resultsCard');
+            
+            // DEBUG: Log what we received
+            console.log('=== displayResults called ===');
+            console.log('Full result:', result);
+            console.log('result.prediction type:', typeof result.prediction);
+            console.log('result.prediction value:', result.prediction);
+            
+            // Handle both response formats:
+            // Manual entry: result = {prediction: 74.87, usage_level: "Normal", recommendations: [...], ...}
+            // File upload calls with: result.prediction = {prediction: 74.87, usage_level: "Normal", ...}
+            // So we need to check if 'prediction' is a number or object
+            const data = (typeof result.prediction === 'object') ? result.prediction : result;
+            
+            console.log('Using data:', data);
+            console.log('data.recommendations:', data.recommendations);
+            
+            // Build recommendations HTML
+            let recommendationsHTML = '';
+            if (data.recommendations && data.recommendations.length > 0) {
+                console.log('✓ Building recommendations HTML');
+                recommendationsHTML = `
+                    <div class="recommendations">
+                        <h4 style="color: var(--success); margin-bottom: 1rem;">💡 Recommendations</h4>
+                        ${data.recommendations.map(rec => `<div class="recommendation-item">${rec}</div>`).join('')}
+                    </div>
+                `;
+            } else {
+                console.log('❌ NO recommendations to display');
+            }
+            
+            resultsCard.innerHTML = `
+                <div class="result-value">${data.prediction}</div>
+                <div class="result-label">kWh Predicted Consumption</div>
+                <div class="result-metrics">
+                    <div class="metric-card">
+                        <div class="metric-value">${data.usage_level}</div>
+                        <div class="metric-label">Usage Level</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.efficiency_score}%</div>
+                        <div class="metric-label">Efficiency Score</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.peak_hour ? 'Yes' : 'No'}</div>
+                        <div class="metric-label">Peak Hour</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.comfort_index}</div>
+                        <div class="metric-label">Comfort Index</div>
+                    </div>
+                </div>
+                ${recommendationsHTML}
+            `;
+        }
+        
+        // ===== GEMINI AI CHATBOT - NEW CODE =====
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Add user message
+            messagesContainer.innerHTML += `
+                <div class="message user">
+                    <div class="message-content">${message}</div>
+                    <div class="message-avatar"><i class="fas fa-user"></i></div>
+                </div>
+            `;
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Check if user wants to start prediction
+            if (!chatState.collectingData && 
+                (message.toLowerCase().includes('predict') || 
+                 message.toLowerCase().includes('calculate') ||
+                 (message.toLowerCase().includes('yes') && chatState.mode === 'ask_prediction'))) {
+                startPredictionFlow();
+                return;
+            }
+            
+            // If collecting data for prediction
+            if (chatState.collectingData) {
+                handlePredictionStep(message);
+                return;
+            }
+            
+            // Otherwise, send to Gemini AI for conversation
+            sendToGeminiAI(message);
+        }
+        
+        function sendToGeminiAI(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Show loading
+            const loadingId = 'loading-' + Date.now();
+            messagesContainer.innerHTML += `
+                <div class="message bot" id="${loadingId}">
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Call backend chatbot endpoint
+            fetch('/api/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading message
+                const loadingMsg = document.getElementById(loadingId);
+                if (loadingMsg) loadingMsg.remove();
+                
+                // Add AI response
+                const poweredBy = data.powered_by === 'gemini' ? 
+                    '<br><br><span style="font-size: 0.75em; opacity: 0.6;">✨ Powered by Gemini AI</span>' : '';
+                
+                messagesContainer.innerHTML += `
+                    <div class="message bot">
+                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-content">
+                            ${data.response}${poweredBy}
+                        </div>
+                    </div>
+                `;
+                
+                // Speak the response
+                speak(data.response);
+                
+                // Check if AI mentioned prediction to offer step-by-step
+                if (data.response.toLowerCase().includes('predict') || 
+                    data.response.toLowerCase().includes('data')) {
+                    chatState.mode = 'ask_prediction';
+                }
+                
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            })
+            .catch(error => {
+                const loadingMsg = document.getElementById(loadingId);
+                if (loadingMsg) loadingMsg.remove();
+                
+                messagesContainer.innerHTML += `
+                    <div class="message bot">
+                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-content">
+                            Sorry, I encountered an error: ${error.message}. Please try again!
+                        </div>
+                    </div>
+                `;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+        
+        function startPredictionFlow() {
+            chatState.collectingData = true;
+            chatState.step = 0;
+            chatState.data = {};
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML += `
+                <div class="message bot">
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">
+                        ${predictionSteps[0].question}
+                    </div>
+                </div>
+            `;
+            
+            // Speak the first question
+            speak(predictionSteps[0].question);
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function handlePredictionStep(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const currentStep = predictionSteps[chatState.step];
+            
+            if (currentStep.type === 'number') {
+                const value = parseFloat(message);
+                if (!isNaN(value)) {
+                    chatState.data[currentStep.key] = value;
+                    chatState.step++;
+                    
+                    if (chatState.step < predictionSteps.length) {
+                        messagesContainer.innerHTML += `
+                            <div class="message bot">
+                                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                                <div class="message-content">
+                                    ${predictionSteps[chatState.step].question}
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Speak the next question
+                        speak(predictionSteps[chatState.step].question);
+                    } else {
+                        makeChatbotPrediction();
+                    }
+                } else {
+                    messagesContainer.innerHTML += `
+                        <div class="message bot">
+                            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                            <div class="message-content">
+                                Please enter a valid number. ${currentStep.question}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Speak the error message
+                    speak('Please enter a valid number. ' + currentStep.question);
+                }
+            } else {
+                const found = currentStep.options.find(opt => 
+                    message.toLowerCase().includes(opt.toLowerCase())
+                );
+                
+                if (found) {
+                    chatState.data[currentStep.key] = found;
+                    chatState.step++;
+                    
+                    if (chatState.step < predictionSteps.length) {
+                        messagesContainer.innerHTML += `
+                            <div class="message bot">
+                                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                                <div class="message-content">
+                                    ${predictionSteps[chatState.step].question}
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Speak the next question
+                        speak(predictionSteps[chatState.step].question);
+                    } else {
+                        makeChatbotPrediction();
+                    }
+                } else {
+                    messagesContainer.innerHTML += `
+                        <div class="message bot">
+                            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                            <div class="message-content">
+                                Please answer: ${currentStep.options.join(' or ')}. ${currentStep.question}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Speak the error message
+                    speak('Please answer: ' + currentStep.options.join(' or ') + '. ' + currentStep.question);
+                }
+            }
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        async function makeChatbotPrediction() {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            const loadingId = 'loading-' + Date.now();
+            messagesContainer.innerHTML += `
+                <div class="message bot" id="${loadingId}">
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">
+                        Calculating your energy prediction... <div class="spinner"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            chatState.data.timestamp = new Date().toISOString().slice(0, 16);
+            
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(chatState.data)
+                });
+                
+                const result = await response.json();
+                
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                
+                if (result.success) {
+                    let recText = result.recommendations && result.recommendations.length > 0
+                        ? '<br><br><strong>💡 Recommendations:</strong><br>' + 
+                          result.recommendations.map(r => '• ' + r).join('<br>')
+                        : '';
+                    
+                    messagesContainer.innerHTML += `
+                        <div class="message bot">
+                            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                            <div class="message-content">
+                                <strong>⚡ Your Energy Prediction:</strong><br><br>
+                                <strong style="font-size: 1.5em; color: var(--primary);">${result.prediction} kWh</strong><br><br>
+                                📊 <strong>Usage Level:</strong> ${result.usage_level}<br>
+                                ⚙️ <strong>Efficiency Score:</strong> ${result.efficiency_score}%<br>
+                                ⏰ <strong>Peak Hour:</strong> ${result.peak_hour ? 'Yes' : 'No'}
+                                ${recText}<br><br>
+                                Want another prediction? Just ask!
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Speak the prediction
+                    const predictionText = `Your energy prediction is ${result.prediction} kilowatt hours. Usage level is ${result.usage_level}. Efficiency score is ${result.efficiency_score} percent. ${result.recommendations && result.recommendations.length > 0 ? 'Here are some recommendations: ' + result.recommendations.join('. ') : ''}`;
+                    speak(predictionText);
+                } else {
+                    messagesContainer.innerHTML += `
+                        <div class="message bot">
+                            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                            <div class="message-content">
+                                Sorry, there was an error making the prediction. Please try again or use the Prediction tab!
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                
+                messagesContainer.innerHTML += `
+                    <div class="message bot">
+                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-content">
+                            Error: ${error.message}. Please try again!
+                        </div>
+                    </div>
+                `;
+            }
+            
+            chatState = { mode: 'conversation', collectingData: false, step: 0, data: {} };
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Allow Enter key to send message
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        // ===== END GEMINI AI CHATBOT CODE =====
+        
+        // Reviews
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.dataset.rating);
+                document.querySelectorAll('.star').forEach((s, index) => {
+                    s.classList.toggle('active', index < currentRating);
+                });
+            });
+        });
+        
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch('/api/submit-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('reviewName').value,
+                        rating: currentRating,
+                        comment: document.getElementById('reviewComment').value
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Thank you for your review!');
+                    document.getElementById('reviewForm').reset();
+                    loadReviews();
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+        
+        async function loadReviews() {
+            try {
+                const response = await fetch('/api/get-reviews');
+                const result = await response.json();
+                if (result.success && result.reviews.length > 0) {
+                    document.getElementById('reviewsList').innerHTML = result.reviews.reverse().map(review => `
+                        <div class="review-card">
+                            <div class="review-header">
+                                <span class="review-author">${review.name}</span>
+                                <span class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
+                            </div>
+                            <p>${review.comment}</p>
+                            <small style="color: rgba(255, 255, 255, 0.4);">${review.timestamp}</small>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+            }
+        }
+        
+        // Dashboard Charts
+        function initCharts() {
+            fetch('/api/charts-data')
+                .then(response => response.json())
+                .then(data => {
+                    new Chart(document.getElementById('trendChart'), {
+                        type: 'line',
+                        data: {
+                            labels: data.energy_trend.labels,
+                            datasets: [{
+                                label: 'Energy (kWh)',
+                                data: data.energy_trend.data,
+                                borderColor: '#00f0ff',
+                                backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { labels: { color: '#f0f4f8' } } },
+                            scales: {
+                                y: { ticks: { color: '#f0f4f8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                                x: { ticks: { color: '#f0f4f8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                            }
+                        }
+                    });
+                    
+                    new Chart(document.getElementById('deviceChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.device_breakdown.labels,
+                            datasets: [{ data: data.device_breakdown.data, backgroundColor: ['#00f0ff', '#8338ec', '#ff006e', '#06ffa5'] }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { labels: { color: '#f0f4f8' } } }
+                        }
+                    });
+                    
+                    new Chart(document.getElementById('tempChart'), {
+                        type: 'scatter',
+                        data: {
+                            datasets: [{
+                                label: 'Temp vs Energy',
+                                data: data.temperature_correlation.temperature.map((temp, i) => ({ x: temp, y: data.temperature_correlation.energy[i] })),
+                                backgroundColor: '#ff006e'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { labels: { color: '#f0f4f8' } } },
+                            scales: {
+                                y: { title: { display: true, text: 'Energy', color: '#f0f4f8' }, ticks: { color: '#f0f4f8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                                x: { title: { display: true, text: 'Temperature', color: '#f0f4f8' }, ticks: { color: '#f0f4f8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                            }
+                        }
+                    });
+                    
+                    new Chart(document.getElementById('occupancyChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.occupancy_impact.occupancy,
+                            datasets: [{ label: 'Energy by Occupancy', data: data.occupancy_impact.energy, backgroundColor: '#8338ec' }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { labels: { color: '#f0f4f8' } } },
+                            scales: {
+                                y: { ticks: { color: '#f0f4f8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                                x: { ticks: { color: '#f0f4f8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                            }
+                        }
+                    });
+                });
+        }
+        
+        // Set default datetime
+        document.getElementById('timestamp').value = new Date().toISOString().slice(0, 16);
+    
+        // ===== FILE UPLOAD FEATURE =====
+        
+        // Show selected filename
+        document.getElementById('dataFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || '';
+            document.getElementById('fileName').textContent = fileName ? `✓ Selected: ${fileName}` : '';
+        });
+        
+        // Switch between manual and file upload methods
+        function switchMethod(method) {
+            const manualBtn = document.getElementById('manualMethodBtn');
+            const fileBtn = document.getElementById('fileMethodBtn');
+            const manualSection = document.getElementById('manualFormSection');
+            const fileSection = document.getElementById('fileUploadSection');
+            const resultsCard = document.getElementById('resultsCard');
+            
+            if (method === 'manual') {
+                manualBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                manualSection.style.display = 'block';
+                fileSection.style.display = 'none';
+            } else {
+                // Switching to file upload method
+                fileBtn.classList.add('active');
+                manualBtn.classList.remove('active');
+                manualSection.style.display = 'none';
+                fileSection.style.display = 'block';
+                
+                // Clear form and results when switching to file upload
+                document.getElementById('predictionForm').reset();
+                document.getElementById('dataFile').value = '';
+                document.getElementById('fileName').textContent = '';
+                
+                // Reset results display
+                resultsCard.innerHTML = `
+                    <i class="fas fa-chart-line" style="font-size: 4rem; color: rgba(0, 240, 255, 0.3); margin-bottom: 1rem;"></i>
+                    <p class="results-placeholder">Your prediction results will appear here</p>
+                `;
+            }
+        }
+        
+        // Upload and extract data from file
+        async function uploadAndExtract() {
+            const fileInput = document.getElementById('dataFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('⚠️ Please select a file first');
+                return;
+            }
+            
+            const loadingDiv = document.getElementById('uploadLoading');
+            const resultsCard = document.getElementById('resultsCard');
+            loadingDiv.style.display = 'block';
+            resultsCard.innerHTML = '<div class="spinner"></div><p class="results-placeholder">Processing your file...</p>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('/api/extract-from-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                
+                if (result.success) {
+                    // Keep file upload section visible but also show manual form
+                    const manualSection = document.getElementById('manualFormSection');
+                    const fileSection = document.getElementById('fileUploadSection');
+                    
+                    // Hide file upload section, show manual form
+                    fileSection.style.display = 'none';
+                    manualSection.style.display = 'block';
+                    
+                    // But keep File Upload button active (don't switch tabs)
+                    // This shows the data came from file upload
+                    
+                    // Auto-fill form with extracted data (including timestamp from backend)
+                    document.getElementById('timestamp').value = result.data.timestamp || '';
+                    document.getElementById('temperature').value = result.data.Temperature || '';
+                    document.getElementById('humidity').value = result.data.Humidity || '';
+                    document.getElementById('squareFootage').value = result.data.SquareFootage || '';
+                    document.getElementById('occupancy').value = result.data.Occupancy || '';
+                    document.getElementById('renewableEnergy').value = result.data.RenewableEnergy || '';
+                    document.getElementById('hvacUsage').value = result.data.HVACUsage || '';
+                    document.getElementById('lightingUsage').value = result.data.LightingUsage || '';
+                    document.getElementById('holiday').value = result.data.Holiday || '';
+                    
+                    // Display prediction results immediately (no need to click predict)
+                    if (result.prediction) {
+                        displayResults(result.prediction);
+                    } else {
+                        resultsCard.innerHTML = `
+                            <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;"></i>
+                            <p style="color: var(--success); font-size: 1.2rem; font-weight: 600;">Data Extracted!</p>
+                            <p class="results-placeholder">Click "Predict" to generate energy forecast.</p>
+                        `;
+                    }
+                    
+                    // Scroll to results
+                    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                } else {
+                    const errorMsg = result.error || 'Failed to extract data from file';
+                    console.error('Backend error:', result);
+                    
+                    resultsCard.innerHTML = `
+                        <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <div class="error-message">${errorMsg}</div>
+                        <p class="results-placeholder" style="margin-top: 1rem;">
+                            Possible issues:<br>
+                            • File may not contain energy parameters<br>
+                            • File format not readable<br>
+                            • Gemini AI extraction failed<br><br>
+                            Check server console for details
+                        </p>
+                    `;
+                }
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultsCard.innerHTML = `
+                    <i class="fas fa-times-circle" style="font-size: 4rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="error-message">Error: ${error.message}</div>
+                    <p class="results-placeholder" style="margin-top: 1rem;">Please check your connection and try again.</p>
+                `;
+            }
+        }
+        
+
+    
+        
+        // ===== SPEECH-TO-TEXT & TEXT-TO-SPEECH FUNCTIONALITY =====
+        
+        let recognition = null;
+        let isListening = false;
+        let autoSpeak = true;
+        
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onstart = function() {
+                    console.log('🎤 Voice recognition started');
+                    isListening = true;
+                    document.getElementById('micButton').classList.add('active');
+                    document.getElementById('micIcon').classList.remove('fa-microphone');
+                    document.getElementById('micIcon').classList.add('fa-stop');
+                    showVoiceIndicator('Listening...');
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    console.log('📝 Recognized:', transcript);
+                    document.getElementById('chatInput').value = transcript;
+                    hideVoiceIndicator();
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('❌ Speech recognition error:', event.error);
+                    isListening = false;
+                    document.getElementById('micButton').classList.remove('active');
+                    document.getElementById('micIcon').classList.remove('fa-stop');
+                    document.getElementById('micIcon').classList.add('fa-microphone');
+                    hideVoiceIndicator();
+                    
+                    if (event.error === 'no-speech') {
+                        alert('No speech detected. Please try again.');
+                    } else if (event.error === 'not-allowed') {
+                        alert('Microphone access denied. Please allow microphone access.');
+                    }
+                };
+                
+                recognition.onend = function() {
+                    console.log('🎤 Voice recognition ended');
+                    isListening = false;
+                    document.getElementById('micButton').classList.remove('active');
+                    document.getElementById('micIcon').classList.remove('fa-stop');
+                    document.getElementById('micIcon').classList.add('fa-microphone');
+                    hideVoiceIndicator();
+                };
+            }
+        }
+        
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                initSpeechRecognition();
+            }
+            
+            if (!recognition) {
+                alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+        
+        function showVoiceIndicator(text) {
+            let indicator = document.querySelector('.voice-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'voice-indicator';
+                document.querySelector('.chat-input-container').appendChild(indicator);
+            }
+            indicator.textContent = text;
+            indicator.style.display = 'block';
+        }
+        
+        function hideVoiceIndicator() {
+            const indicator = document.querySelector('.voice-indicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+        
+        function speak(text) {
+            if (!autoSpeak) return;
+            
+            window.speechSynthesis.cancel();
+            
+            const cleanText = text
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/[⚡📊⚙️⏰💡•✨]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            if (!cleanText) return;
+            
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            const voices = window.speechSynthesis.getVoices();
+            const goodVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && 
+                (voice.name.includes('Google') || voice.name.includes('Microsoft'))
+            ) || voices.find(voice => voice.lang.startsWith('en'));
+            
+            if (goodVoice) {
+                utterance.voice = goodVoice;
+            }
+            
+            utterance.onstart = function() {
+                document.getElementById('speakerButton').classList.add('speaking');
+            };
+            
+            utterance.onend = function() {
+                document.getElementById('speakerButton').classList.remove('speaking');
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function toggleAutoSpeak() {
+            autoSpeak = !autoSpeak;
+            const speakerButton = document.getElementById('speakerButton');
+            const speakerIcon = document.getElementById('speakerIcon');
+            
+            if (autoSpeak) {
+                speakerButton.style.background = 'rgba(0, 240, 255, 0.1)';
+                speakerButton.style.borderColor = 'var(--primary)';
+                speakerIcon.classList.remove('fa-volume-mute');
+                speakerIcon.classList.add('fa-volume-up');
+                speak('Auto-speak enabled');
+            } else {
+                speakerButton.style.background = 'rgba(255, 0, 0, 0.1)';
+                speakerButton.style.borderColor = '#ff4444';
+                speakerIcon.classList.remove('fa-volume-up');
+                speakerIcon.classList.add('fa-volume-mute');
+                window.speechSynthesis.cancel();
+            }
+        }
+        
+        window.speechSynthesis.onvoiceschanged = function() {
+            console.log('🔊 Voices loaded');
+        };
+        
+        // Initialize on page load
+        setTimeout(initSpeechRecognition, 500);
+        
+        // ===== END SPEECH FUNCTIONALITY =====
+
+
+    </script>
+</body>
+</html>

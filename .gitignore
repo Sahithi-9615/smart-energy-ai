@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+uploads/
+test_gemini.py
+gemini_chatbot.py
+start.sh
+users.json
+.env.example
