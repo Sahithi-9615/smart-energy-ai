@@ -1172,6 +1172,297 @@
                 height: 300px;
             }
         }
+        /* ==================== USER PROFILE STYLES ==================== */
+.user-profile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.user-profile:hover {
+    background: rgba(0, 240, 255, 0.1);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--darker);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--light);
+}
+
+.user-role {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 280px;
+    background: rgba(10, 14, 39, 0.98);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    display: none;
+    z-index: 1001;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+}
+
+.profile-dropdown.active {
+    display: block;
+    animation: dropdownFade 0.3s ease;
+}
+
+@keyframes dropdownFade {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-header {
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    margin-bottom: 1rem;
+}
+
+.profile-header .user-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+    margin: 0 auto 0.5rem;
+}
+
+.profile-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.profile-stat-label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-stat-value {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.profile-actions {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-action-btn {
+    padding: 0.7rem;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 8px;
+    color: var(--light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.profile-action-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    transform: translateX(5px);
+}
+
+/* ==================== DASHBOARD ENHANCEMENTS ==================== */
+.stat-card {
+    background: rgba(10, 14, 39, 0.6);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-icon.primary {
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.1));
+    color: var(--primary);
+}
+
+.stat-icon.success {
+    background: linear-gradient(135deg, rgba(6, 255, 165, 0.2), rgba(6, 255, 165, 0.1));
+    color: var(--success);
+}
+
+.stat-icon.warning {
+    background: linear-gradient(135deg, rgba(255, 190, 11, 0.2), rgba(255, 190, 11, 0.1));
+    color: var(--warning);
+}
+
+.stat-icon.accent {
+    background: linear-gradient(135deg, rgba(131, 56, 236, 0.2), rgba(131, 56, 236, 0.1));
+    color: var(--accent);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--light);
+    margin-bottom: 0.3rem;
+}
+
+.stat-change {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.stat-change.positive { color: var(--success); }
+.stat-change.negative { color: var(--secondary); }
+.stat-change.neutral { color: rgba(255, 255, 255, 0.6); }
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.history-table th {
+    background: rgba(0, 240, 255, 0.1);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary);
+    border-bottom: 2px solid rgba(0, 240, 255, 0.3);
+}
+
+.history-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.history-table tr:hover {
+    background: rgba(0, 240, 255, 0.05);
+}
+
+.usage-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.usage-badge.high {
+    background: rgba(255, 0, 110, 0.2);
+    color: var(--secondary);
+    border: 1px solid rgba(255, 0, 110, 0.3);
+}
+
+.usage-badge.normal {
+    background: rgba(6, 255, 165, 0.2);
+    color: var(--success);
+    border: 1px solid rgba(6, 255, 165, 0.3);
+}
+
+.trend-chart-container {
+    background: rgba(10, 14, 39, 0.6);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.chart-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: rgba(0, 240, 255, 0.3);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: var(--light);
+    margin-bottom: 0.5rem;
+}
     </style>
 </head>
 <body>
@@ -1209,10 +1500,51 @@
                 </button>
             </div>
             
-            <a href="/logout" class="logout-button">
+            <!-- Replace the logout button section with this -->
+<div class="user-profile" onclick="toggleProfileDropdown()">
+    <div class="user-avatar" id="userAvatar">U</div>
+    <div class="user-info">
+        <div class="user-name" id="userName">{{ username }}</div>
+        <div class="user-role">Member</div>
+    </div>
+    <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+    
+    <div class="profile-dropdown" id="profileDropdown">
+        <div class="profile-header">
+            <div class="user-avatar" id="profileAvatar">U</div>
+            <div class="user-name" id="profileName" style="margin-top: 0.5rem;">{{ username }}</div>
+            <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 0.3rem;" id="profileEmail">
+                email@example.com
+            </div>
+        </div>
+        
+        <div style="margin: 1rem 0;">
+            <div class="profile-stat">
+                <span class="profile-stat-label">Member Since</span>
+                <span class="profile-stat-value" id="memberSince">-</span>
+            </div>
+            <div class="profile-stat">
+                <span class="profile-stat-label">Total Predictions</span>
+                <span class="profile-stat-value" id="totalPredictions">0</span>
+            </div>
+            <div class="profile-stat">
+                <span class="profile-stat-label">Avg Consumption</span>
+                <span class="profile-stat-value" id="avgConsumption">0 kWh</span>
+            </div>
+            <div class="profile-stat">
+                <span class="profile-stat-label">Avg Efficiency</span>
+                <span class="profile-stat-value" id="avgEfficiency">0%</span>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <a href="/logout" class="profile-action-btn" style="background: rgba(255, 0, 110, 0.1); border-color: rgba(255, 0, 110, 0.3);">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
+        </div>
+    </div>
+</div>
         </div>
     </nav>
     
@@ -1467,37 +1799,112 @@
     
     <!-- Dashboard Tab -->
     <div id="dashboard" class="tab-content">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Energy Analytics Dashboard</h2>
-                <p class="section-description">
-                    Visualize energy patterns and insights from your data
-                </p>
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Energy Analytics Dashboard</h2>
+            <p class="section-description">
+                Comprehensive analysis of your energy consumption patterns
+            </p>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-label">Total Predictions</div>
+                <div class="stat-value" id="dashTotalPredictions">0</div>
+                <div class="stat-change neutral" id="dashPredictionChange">
+                    <i class="fas fa-minus"></i>
+                    <span>No data yet</span>
+                </div>
             </div>
             
-            <div class="dashboard-grid">
-                <div class="chart-card">
-                    <h3 class="chart-title">Energy Consumption Trend</h3>
-                    <canvas id="trendChart"></canvas>
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-bolt"></i>
                 </div>
-                
-                <div class="chart-card">
-                    <h3 class="chart-title">Device Breakdown</h3>
-                    <canvas id="deviceChart"></canvas>
+                <div class="stat-label">Avg Consumption</div>
+                <div class="stat-value" id="dashAvgConsumption">0 <small style="font-size: 0.5em;">kWh</small></div>
+                <div class="stat-change neutral" id="dashConsumptionTrend">
+                    <i class="fas fa-minus"></i>
+                    <span>Stable</span>
                 </div>
-                
-                <div class="chart-card">
-                    <h3 class="chart-title">Temperature vs Energy</h3>
-                    <canvas id="tempChart"></canvas>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-leaf"></i>
                 </div>
-                
-                <div class="chart-card">
-                    <h3 class="chart-title">Occupancy Impact</h3>
-                    <canvas id="occupancyChart"></canvas>
+                <div class="stat-label">Avg Efficiency</div>
+                <div class="stat-value" id="dashAvgEfficiency">0<small style="font-size: 0.5em;">%</small></div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Good performance</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon accent">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="stat-label">High Usage Events</div>
+                <div class="stat-value" id="dashHighUsage">0</div>
+                <div class="stat-change" id="dashHighUsagePercent">
+                    <span>0% of total</span>
                 </div>
             </div>
         </div>
+
+        <!-- Consumption Trend Chart -->
+        <div class="trend-chart-container">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">Consumption Trend</div>
+                    <div class="chart-subtitle">Last 10 predictions</div>
+                </div>
+            </div>
+            <div style="position: relative; height: 300px;">
+    <canvas id="consumptionTrendChart"></canvas>
+</div>
+        </div>
+        
+        <!-- Recent Predictions History -->
+        <div class="trend-chart-container">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">Recent Prediction History</div>
+                    <div class="chart-subtitle">Your latest energy predictions</div>
+                </div>
+            </div>
+            
+            <div id="predictionHistoryContainer">
+                <div class="empty-state">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>No Predictions Yet</h3>
+                    <p>Start making predictions to see your history here</p>
+                    <button class="btn btn-primary" onclick="showTab('prediction')">
+                        <i class="fas fa-plus"></i>
+                        Make Your First Prediction
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this after the dashboard-grid div -->
+<div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+    <button class="btn btn-primary" onclick="downloadReport()" id="downloadReportBtn">
+        <i class="fas fa-download"></i>
+        Download PDF Report
+    </button>
+    <button class="btn btn-secondary" onclick="emailReport()" id="emailReportBtn">
+        <i class="fas fa-envelope"></i>
+        Email Report to Me
+    </button>
+</div>
     </div>
+</div>
     
     <!-- About Tab -->
     <div id="about" class="tab-content">
@@ -1674,6 +2081,7 @@
     
     <script>
         // Global variables
+        let accumulatedParams = {};
         let currentRating = 5;
         let chatState = {
             mode: 'conversation',
@@ -1693,6 +2101,482 @@
             { key: 'Holiday', question: 'Last question! Is today a holiday? (Yes/No)', type: 'text', options: ['Yes', 'No'] }
         ];
         
+        function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+        function resetAccumulatedParams() {
+    accumulatedParams = {};
+    console.log('🔄 Accumulated parameters reset');
+}
+function resetChatState() {
+    chatState = {
+        mode: 'conversation',
+        collectingData: false,
+        step: 0,
+        data: {}
+    };
+    console.log('🔄 Chat state reset');
+}
+
+    function extractParametersFromText(text, useAccumulated = true) {
+    const params = useAccumulated ? {...accumulatedParams} : {};
+    const textLower = text.toLowerCase();
+    
+    // Temperature
+    const temp = textLower.match(/temperature\s*:?\s*(\d+\.?\d*)/i);
+    if (temp) params.Temperature = parseFloat(temp[1]);
+    
+    // Humidity
+    const humidity = textLower.match(/humidity\s*:?\s*(\d+\.?\d*)/i);
+    if (humidity) params.Humidity = parseFloat(humidity[1]);
+    
+    // Square Footage
+    const sqft = textLower.match(/square\s*footage\s*:?\s*(\d+)/i);
+    if (sqft) params.SquareFootage = parseInt(sqft[1]);
+    
+    // Occupancy
+    const occ = textLower.match(/occupancy\s*:?\s*(\d+)/i);
+    if (occ) params.Occupancy = parseInt(occ[1]);
+    
+    // Renewable Energy
+    const renewable = textLower.match(/renewable\s*energy\s*:?\s*(\d+\.?\d*)/i);
+    if (renewable) params.RenewableEnergy = parseFloat(renewable[1]);
+    
+    // HVAC
+    if (textLower.includes('hvac')) {
+        if (textLower.includes('on')) {
+            params.HVACUsage = 'On';
+        } else if (textLower.includes('off')) {
+            params.HVACUsage = 'Off';
+        }
+    }
+    
+    // Lighting/Lightning
+    if (textLower.includes('lighting') || textLower.includes('lightning')) {
+        if (textLower.includes('on')) {
+            params.LightingUsage = 'On';
+        } else if (textLower.includes('off')) {
+            params.LightingUsage = 'Off';
+        }
+    }
+    
+    // Holiday
+    if (textLower.includes('holiday')) {
+        if (textLower.includes('yes')) {
+            params.Holiday = 'Yes';
+        } else if (textLower.includes('no')) {
+            params.Holiday = 'No';
+        }
+    }
+    
+    // Date/Time
+    const dateMatch = text.match(/(\d{1,2})-(\d{1,2})-(\d{4})\s+(\d{1,2}):(\d{2})/);
+    if (dateMatch) {
+        const [_, day, month, year, hour, minute] = dateMatch;
+        params.timestamp = `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}T${hour.padStart(2,'0')}:${minute}`;
+    } else if (!params.timestamp) {
+        params.timestamp = new Date().toISOString().slice(0, 16);
+    }
+    
+    // Store accumulated params
+    if (useAccumulated) {
+        accumulatedParams = {...params};
+    }
+    
+    // Check if ALL 8 required parameters are present
+    const required = ['Temperature', 'Humidity', 'SquareFootage', 'Occupancy', 
+                     'RenewableEnergy', 'HVACUsage', 'LightingUsage', 'Holiday'];
+    
+    const allPresent = required.every(p => params[p] !== undefined && params[p] !== null);
+    const missing = required.filter(p => params[p] === undefined || params[p] === null);
+    
+    console.log('📊 Parameters:', params);
+    console.log(allPresent ? '✅ Complete!' : `⚠️ Missing: ${missing.join(', ')}`);
+    
+    if (allPresent) {
+        accumulatedParams = {};
+        return { complete: true, params: params, missing: [] };
+    } else {
+        return { complete: false, params: params, missing: missing };
+    }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    // Display user message
+    messagesContainer.innerHTML += `
+        <div class="message user">
+            <div class="message-content">${escapeHtml(message)}</div>
+            <div class="message-avatar"><i class="fas fa-user"></i></div>
+        </div>
+    `;
+    
+    input.value = '';
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    const messageLower = message.toLowerCase();
+    
+    // ============================================================
+    // SCENARIO 1: User says "predict energy" or similar
+    // ============================================================
+    if ((messageLower.includes('predict') || messageLower.includes('calculate')) && 
+        !chatState.collectingData &&
+        !messageLower.match(/\d/)) {  // No numbers = just asking
+        
+        console.log('📝 Scenario 1: Starting step-by-step collection');
+        startStepByStepCollection();
+        return;
+    }
+    
+    // ============================================================
+    // SCENARIO 2 & 3: User provides parameters (complete or partial)
+    // ============================================================
+    if (!chatState.collectingData) {
+        // Check if message contains parameter data
+        const extraction = extractParametersFromText(message, true);
+        
+        if (extraction.complete) {
+            // SCENARIO 2: All parameters provided at once
+            console.log('✅ Scenario 2: All parameters complete - predicting');
+            await makePredictionFromParams(extraction.params);
+            return;
+        } else if (Object.keys(extraction.params).length > 1) {
+            // SCENARIO 3: Partial parameters - ask for missing
+            console.log('⚠️ Scenario 3: Partial parameters - asking for missing');
+            askForMissingParameters(extraction.missing);
+            return;
+        }
+    }
+    
+    // ============================================================
+    // STEP-BY-STEP MODE: Collecting parameters one by one
+    // ============================================================
+    if (chatState.collectingData) {
+        handleStepByStepInput(message);
+        return;
+    }
+    
+    // ============================================================
+    // DEFAULT: General conversation
+    // ============================================================
+    console.log('💬 Default: General conversation');
+    sendToAI(message);
+}
+
+function startStepByStepCollection() {
+    chatState.mode = 'step_by_step';
+    chatState.collectingData = true;
+    chatState.step = 0;
+    chatState.data = {};
+    resetAccumulatedParams();
+    
+    const messagesContainer = document.getElementById('chatMessages');
+    messagesContainer.innerHTML += `
+        <div class="message bot">
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">${predictionSteps[0].question}</div>
+        </div>
+    `;
+    
+    speak(predictionSteps[0].question);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function handleStepByStepInput(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const currentStep = predictionSteps[chatState.step];
+    
+    if (currentStep.type === 'number') {
+        const value = parseFloat(message);
+        if (!isNaN(value)) {
+            chatState.data[currentStep.key] = value;
+            chatState.step++;
+            
+            if (chatState.step < predictionSteps.length) {
+                messagesContainer.innerHTML += `
+                    <div class="message bot">
+                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-content">${predictionSteps[chatState.step].question}</div>
+                    </div>
+                `;
+                speak(predictionSteps[chatState.step].question);
+            } else {
+                makePredictionFromStepByStep();
+            }
+        } else {
+            messagesContainer.innerHTML += `
+                <div class="message bot">
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">Please enter a valid number. ${currentStep.question}</div>
+                </div>
+            `;
+            speak('Please enter a valid number.');
+        }
+    } else {
+        const found = currentStep.options.find(opt => 
+            message.toLowerCase().includes(opt.toLowerCase())
+        );
+        
+        if (found) {
+            chatState.data[currentStep.key] = found;
+            chatState.step++;
+            
+            if (chatState.step < predictionSteps.length) {
+                messagesContainer.innerHTML += `
+                    <div class="message bot">
+                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-content">${predictionSteps[chatState.step].question}</div>
+                    </div>
+                `;
+                speak(predictionSteps[chatState.step].question);
+            } else {
+                makePredictionFromStepByStep();
+            }
+        } else {
+            messagesContainer.innerHTML += `
+                <div class="message bot">
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">Please answer: ${currentStep.options.join(' or ')}.</div>
+                </div>
+            `;
+            speak('Please answer: ' + currentStep.options.join(' or '));
+        }
+    }
+    
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+async function makePredictionFromStepByStep() {
+    chatState.data.timestamp = new Date().toISOString().slice(0, 16);
+    await makePredictionFromParams(chatState.data);
+    resetChatState();
+}
+
+// ==================== SCENARIO 3: ASK FOR MISSING PARAMETERS ====================
+
+function askForMissingParameters(missing) {
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    const missingList = missing.map(m => {
+        switch(m) {
+            case 'Temperature': return 'Temperature (°C)';
+            case 'Humidity': return 'Humidity (%)';
+            case 'SquareFootage': return 'Square Footage';
+            case 'Occupancy': return 'Occupancy (number of people)';
+            case 'RenewableEnergy': return 'Renewable Energy (kWh)';
+            case 'HVACUsage': return 'HVAC Usage (On/Off)';
+            case 'LightingUsage': return 'Lighting Usage (On/Off)';
+            case 'Holiday': return 'Holiday (Yes/No)';
+            default: return m;
+        }
+    }).join(', ');
+    
+    const responseText = `I have most of the information! I still need: ${missingList}. Please provide the missing values.`;
+    
+    messagesContainer.innerHTML += `
+        <div class="message bot">
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">${responseText}</div>
+        </div>
+    `;
+    
+    speak(responseText);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// ==================== MAKE PREDICTION ====================
+
+async function makePredictionFromParams(params) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const loadingId = 'loading-pred-' + Date.now();
+    
+    messagesContainer.innerHTML += `
+        <div class="message bot" id="${loadingId}">
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+                <div class="spinner"></div>
+                <span style="margin-left: 1rem;">Analyzing your parameters...</span>
+            </div>
+        </div>
+    `;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    try {
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        
+        const result = await response.json();
+        
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+        
+        if (result.success || result.prediction) {
+            displayPredictionResult(result);
+            resetAccumulatedParams();
+            resetChatState();
+        } else {
+            throw new Error(result.error || 'Prediction failed');
+        }
+        
+    } catch (error) {
+        console.error('Prediction error:', error);
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+        
+        messagesContainer.innerHTML += `
+            <div class="message bot">
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content">
+                    ❌ Sorry, prediction failed: ${escapeHtml(error.message)}
+                </div>
+            </div>
+        `;
+    }
+    
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function displayPredictionResult(result) {
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    let recsHTML = '';
+    if (result.recommendations && result.recommendations.length > 0) {
+        recsHTML = `
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,240,255,0.05); border-radius: 8px; border: 1px solid rgba(0,240,255,0.2);">
+                <strong style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem;">
+                    <i class="fas fa-lightbulb"></i> Recommendations:
+                </strong>
+                <ul style="margin: 0; padding-left: 1.5rem;">
+                    ${result.recommendations.map(r => `<li style="margin: 0.5rem 0; color: rgba(255,255,255,0.9);">${escapeHtml(r)}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    messagesContainer.innerHTML += `
+        <div class="message bot">
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+                <strong style="font-size: 1.1rem; color: var(--primary); display: block; margin-bottom: 1rem;">
+                    ⚡ Energy Prediction Results
+                </strong>
+                
+                <div style="margin: 1rem 0; padding: 1.5rem; background: rgba(131,56,236,0.1); border-radius: 12px; border: 1px solid rgba(131,56,236,0.3); text-align: center;">
+                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--primary);">
+                        ${result.prediction} kWh
+                    </div>
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+                        Predicted Energy Consumption
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin: 1rem 0;">
+                    <div style="padding: 0.8rem; background: rgba(0,240,255,0.05); border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">Usage Level</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: ${result.usage_level === 'High' ? 'var(--secondary)' : 'var(--success)'};">
+                            ${result.usage_level}
+                        </div>
+                    </div>
+                    <div style="padding: 0.8rem; background: rgba(0,240,255,0.05); border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">Efficiency</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--success);">
+                            ${result.efficiency_score}%
+                        </div>
+                    </div>
+                    <div style="padding: 0.8rem; background: rgba(0,240,255,0.05); border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">Peak Hour</div>
+                        <div style="font-size: 1.2rem; font-weight: 700;">
+                            ${result.peak_hour ? 'Yes' : 'No'}
+                        </div>
+                    </div>
+                    <div style="padding: 0.8rem; background: rgba(0,240,255,0.05); border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">Comfort Index</div>
+                        <div style="font-size: 1.2rem; font-weight: 700;">
+                            ${result.comfort_index}
+                        </div>
+                    </div>
+                </div>
+                
+                ${recsHTML}
+                
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: rgba(255,255,255,0.6); text-align: center;">
+                    Want another prediction? Just provide the parameters!
+                </div>
+            </div>
+        </div>
+    `;
+    
+    speak(`Your predicted energy consumption is ${result.prediction} kilowatt hours. Usage level is ${result.usage_level}.`);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+function sendToAI(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const loadingId = 'loading-ai-' + Date.now();
+    
+    messagesContainer.innerHTML += `
+        <div class="message bot" id="${loadingId}">
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content"><div class="spinner"></div></div>
+        </div>
+    `;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    fetch('/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+        
+        const poweredBy = data.powered_by === 'groq' ? 
+            '<br><br><span style="font-size: 0.75em; opacity: 0.6;">⚡ Powered by Groq AI</span>' :
+            data.powered_by === 'gemini' ? 
+            '<br><br><span style="font-size: 0.75em; opacity: 0.6;">✨ Powered by Gemini AI</span>' :
+            '<br><br><span style="font-size: 0.75em; opacity: 0.6;">🛡️ Rule-based</span>';
+        
+        messagesContainer.innerHTML += `
+            <div class="message bot">
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content">${data.response}${poweredBy}</div>
+            </div>
+        `;
+        
+        speak(data.response);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    })
+    .catch(error => {
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+        
+        messagesContainer.innerHTML += `
+            <div class="message bot">
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content">Sorry, I encountered an error: ${escapeHtml(error.message)}. Please try again!</div>
+            </div>
+        `;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+}
+
+document.getElementById('chatInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
         // Tab navigation
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -1900,93 +2784,8 @@
             }
         }
         
-        // Chatbot Functions
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            if (!message) return;
-            
-            const messagesContainer = document.getElementById('chatMessages');
-            
-            messagesContainer.innerHTML += `
-                <div class="message user">
-                    <div class="message-content">${message}</div>
-                    <div class="message-avatar"><i class="fas fa-user"></i></div>
-                </div>
-            `;
-            input.value = '';
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            if (!chatState.collectingData && 
-                (message.toLowerCase().includes('predict') || 
-                 message.toLowerCase().includes('calculate') ||
-                 (message.toLowerCase().includes('yes') && chatState.mode === 'ask_prediction'))) {
-                startPredictionFlow();
-                return;
-            }
-            
-            if (chatState.collectingData) {
-                handlePredictionStep(message);
-                return;
-            }
-            
-            sendToGeminiAI(message);
-        }
         
-        function sendToGeminiAI(message) {
-            const messagesContainer = document.getElementById('chatMessages');
-            const loadingId = 'loading-' + Date.now();
-            
-            messagesContainer.innerHTML += `
-                <div class="message bot" id="${loadingId}">
-                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                    <div class="message-content"><div class="spinner"></div></div>
-                </div>
-            `;
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            fetch('/api/chatbot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                const loadingMsg = document.getElementById(loadingId);
-                if (loadingMsg) loadingMsg.remove();
-                
-                const poweredBy = data.powered_by === 'gemini' ? 
-                    '<br><br><span style="font-size: 0.75em; opacity: 0.6;">✨ Powered by Gemini AI</span>' : '';
-                
-                messagesContainer.innerHTML += `
-                    <div class="message bot">
-                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                        <div class="message-content">${data.response}${poweredBy}</div>
-                    </div>
-                `;
-                
-                speak(data.response);
-                
-                if (data.response.toLowerCase().includes('predict') || 
-                    data.response.toLowerCase().includes('data')) {
-                    chatState.mode = 'ask_prediction';
-                }
-                
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            })
-            .catch(error => {
-                const loadingMsg = document.getElementById(loadingId);
-                if (loadingMsg) loadingMsg.remove();
-                
-                messagesContainer.innerHTML += `
-                    <div class="message bot">
-                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                        <div class="message-content">Sorry, I encountered an error: ${error.message}. Please try again!</div>
-                    </div>
-                `;
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            });
-        }
+        
         
         function startPredictionFlow() {
             chatState.collectingData = true;
@@ -2411,6 +3210,393 @@
         
         // Set default datetime
         document.getElementById('timestamp').value = new Date().toISOString().slice(0, 16);
+// ==================== USER PROFILE FUNCTIONS ====================
+
+let userProfileData = null;
+
+async function loadUserProfile() {
+    try {
+        const response = await fetch('/api/user-profile');
+        const data = await response.json();
+        
+        if (data.success) {
+            userProfileData = data;
+            
+            // Update navbar
+            const initials = data.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = data.name;
+            
+            // Update dropdown
+            document.getElementById('profileAvatar').textContent = initials;
+            document.getElementById('profileName').textContent = data.name;
+            document.getElementById('profileEmail').textContent = data.email;
+            
+            // Format member since date
+            try {
+                const memberDate = new Date(data.member_since);
+                const formattedDate = memberDate.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short' 
+                });
+                document.getElementById('memberSince').textContent = formattedDate;
+            } catch(e) {
+                document.getElementById('memberSince').textContent = 'N/A';
+            }
+            
+            // Update stats
+            document.getElementById('totalPredictions').textContent = data.total_predictions;
+            document.getElementById('avgConsumption').textContent = `${data.avg_consumption} kWh`;
+            document.getElementById('avgEfficiency').textContent = `${data.avg_efficiency}%`;
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+}
+
+function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profileDropdown');
+    dropdown.classList.toggle('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const profile = document.querySelector('.user-profile');
+    const dropdown = document.getElementById('profileDropdown');
+    
+    if (profile && dropdown && !profile.contains(event.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+
+// ==================== DASHBOARD FUNCTIONS ====================
+
+let consumptionChart = null;
+
+async function loadDashboardData() {
+    try {
+        const response = await fetch('/api/dashboard-stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update stat cards
+            document.getElementById('dashTotalPredictions').textContent = data.stats.total_predictions;
+            document.getElementById('dashAvgConsumption').textContent = data.stats.avg_consumption;
+            document.getElementById('dashAvgEfficiency').textContent = data.stats.avg_efficiency;
+            document.getElementById('dashHighUsage').textContent = data.stats.high_usage_count;
+            
+            // Update high usage percentage
+            const highPercent = data.stats.total_predictions > 0 
+                ? Math.round((data.stats.high_usage_count / data.stats.total_predictions) * 100)
+                : 0;
+            document.getElementById('dashHighUsagePercent').innerHTML = `<span>${highPercent}% of total</span>`;
+            
+            // Update trend indicator
+            const trendEl = document.getElementById('dashConsumptionTrend');
+            const predictionChangeEl = document.getElementById('dashPredictionChange');
+if (data.stats.total_predictions > 0) {
+    predictionChangeEl.className = 'stat-change neutral';
+    predictionChangeEl.innerHTML = '<i class="fas fa-chart-line"></i><span>Predictions made</span>';
+} else {
+    predictionChangeEl.className = 'stat-change neutral';
+    predictionChangeEl.innerHTML = '<i class="fas fa-minus"></i><span>No data yet</span>';
+}
+            
+            // Update consumption trend chart
+            updateConsumptionChart(data.consumption_trend);
+            
+            // Load prediction history
+            loadPredictionHistory();
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+function updateConsumptionChart(trendData) {
+    const ctx = document.getElementById('consumptionTrendChart');
+    
+    if (!ctx) return;
+    
+    if (!trendData || trendData.length === 0) {
+        return;
+    }
+    
+    // Destroy existing chart
+    if (consumptionChart) {
+        consumptionChart.destroy();
+    }
+    
+    const labels = trendData.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    });
+    
+    const values = trendData.map(item => item.consumption);
+    
+    consumptionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Energy Consumption (kWh)',
+                data: values,
+                borderColor: '#00f0ff',
+                backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#00f0ff',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#00f0ff',
+                    bodyColor: '#ffffff',
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.parsed.y} kWh`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { 
+                        color: '#f0f4f8',
+                        callback: function(value) {
+                            return value + ' kWh';
+                        }
+                    },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                x: {
+                    ticks: { 
+                        color: '#f0f4f8',
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            }
+        }
+    });
+}
+
+async function loadPredictionHistory() {
+    try {
+        const response = await fetch('/api/prediction-history');
+        const data = await response.json();
+        
+        if (data.success && data.predictions.length > 0) {
+            const container = document.getElementById('predictionHistoryContainer');
+            
+            let tableHTML = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Consumption</th>
+                            <th>Usage Level</th>
+                            <th>Efficiency</th>
+                            <th>Temperature</th>
+                            <th>Occupancy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.predictions.forEach(pred => {
+                const date = new Date(pred.date);
+                const formattedDate = date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                tableHTML += `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td><strong style="color: var(--primary);">${pred.prediction} kWh</strong></td>
+                        <td><span class="usage-badge ${pred.usage_level.toLowerCase()}">${pred.usage_level}</span></td>
+                        <td>${pred.efficiency_score}%</td>
+                        <td>${pred.temperature || 'N/A'}°C</td>
+                        <td>${pred.occupancy || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+// ==================== INITIALIZE ON PAGE LOAD ====================
+
+window.addEventListener('load', function() {
+    loadUserProfile();
+});
+
+// Update the existing showTab function
+const originalShowTab = typeof showTab !== 'undefined' ? showTab : null;
+
+if (originalShowTab) {
+    showTab = function(tabName) {
+        originalShowTab(tabName);
+        
+        if (tabName === 'dashboard') {
+            setTimeout(loadDashboardData, 100);
+        }
+    };
+} else {
+    // If showTab doesn't exist yet, it will be overridden when it's defined
+    console.warn('showTab function not found, will override when available');
+}
+
+// ==================== REPORT FUNCTIONS ====================
+
+async function downloadReport() {
+    const btn = document.getElementById('downloadReportBtn');
+    const originalText = btn.innerHTML;
+    
+    try {
+        // Show loading
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        btn.disabled = true;
+        
+        // Download report
+        const response = await fetch('/api/download-report');
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to generate report');
+        }
+        
+        // Create blob and download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `energy_report_${new Date().toISOString().slice(0,10)}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Show success message
+        showNotification('✅ Report downloaded successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        showNotification('❌ ' + error.message, 'error');
+    } finally {
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function emailReport() {
+    const btn = document.getElementById('emailReportBtn');
+    const originalText = btn.innerHTML;
+    
+    try {
+        // Show loading
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        btn.disabled = true;
+        
+        // Send email
+        const response = await fetch('/api/email-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('✅ Report sent to your email!', 'success');
+        } else {
+            throw new Error(result.error || 'Failed to send email');
+        }
+        
+    } catch (error) {
+        console.error('Email error:', error);
+        showNotification('❌ ' + error.message, 'error');
+    } finally {
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? 'rgba(6, 255, 165, 0.9)' : 'rgba(255, 0, 110, 0.9)'};
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add animation styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
     </script>
 </body>
 </html>
