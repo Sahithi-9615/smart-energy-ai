@@ -8,17 +8,18 @@ import secrets
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 from io import BytesIO
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
+from datetime import datetime, timedelta
 
-# Try to import CORS
+# Try CORS import
 try:
     from flask_cors import CORS
     CORS_AVAILABLE = True
@@ -29,61 +30,62 @@ import pickle
 import numpy as np
 import pandas as pd
 import json
-from datetime import datetime, timedelta
+import re
 
-# File processing libraries
+# File processing
 try:
     import PyPDF2
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
-    print("⚠️ PyPDF2 not installed - PDF extraction disabled")
 
 try:
     import docx
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
-    print("⚠️ python-docx not installed - DOCX extraction disabled")
 
-# Import Groq AI (Now Primary)
+# Groq AI
 try:
     from groq import Groq
     GROQ_AVAILABLE = True
 except ImportError:
     GROQ_AVAILABLE = False
-    print("⚠️ Groq not installed")
 
-# Import Gemini AI (Now Backup)
+# Gemini AI - Try new then old
 try:
-    import google.generativeai as genai
+    from google.genai import Client as GoogleGenaiClient
     GEMINI_AVAILABLE = True
+    USING_NEW_GEMINI = True
 except ImportError:
-    GEMINI_AVAILABLE = False
-    print("⚠️ google-generativeai not installed")
+    try:
+        import google.generativeai as genai
+        GEMINI_AVAILABLE = True
+        USING_NEW_GEMINI = False
+    except ImportError:
+        GEMINI_AVAILABLE = False
+        USING_NEW_GEMINI = False
 
-# ==================== DATABASE IMPORTS ====================
+# Database
 try:
     from flask_sqlalchemy import SQLAlchemy
     SQLALCHEMY_AVAILABLE = True
 except ImportError:
     SQLALCHEMY_AVAILABLE = False
-    print("⚠️ Flask-SQLAlchemy not installed")
 
 load_dotenv()
 
-# Email Configuration
+# ==================== CONFIGURATION ====================
+
 EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'your-email@gmail.com')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', 'your-app-password')
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
 
-# ==================== FLASK APP INITIALIZATION ====================
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(32))
 app.permanent_session_lifetime = timedelta(hours=24)
 
-# File upload configuration
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'txt', 'doc', 'docx', 'csv'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -93,47 +95,34 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 # ==================== DATABASE CONFIGURATION ====================
-# FIXED: Initialize SQLAlchemy BEFORE defining models
+
 DATABASE_URL = os.getenv('DATABASE_URL')
 USE_POSTGRESQL = False
 db = None
 
-# Configure SQLAlchemy
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 10,
-    'pool_recycle': 3600,
-    'pool_pre_ping': True,
-}
-
-# Set database URI
-if DATABASE_URL:
-    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-    USE_POSTGRESQL = True
-    print("✅ PostgreSQL configured")
-else:
-    # SQLite fallback for local testing
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///smart_energy.db'
-    USE_POSTGRESQL = False
-    print("⚠️ Using SQLite - set DATABASE_URL for PostgreSQL")
-
-# Initialize SQLAlchemy ONCE
 if SQLALCHEMY_AVAILABLE:
-    try:
-        db = SQLAlchemy(app)
-        print("✅ SQLAlchemy initialized")
-    except Exception as e:
-        print(f"❌ SQLAlchemy error: {e}")
-        db = None
-
-# JSON fallback paths
-JSON_DB_DIR = 'data'
-USERS_FILE = os.path.join(JSON_DB_DIR, 'users.json')
-PREDICTIONS_FILE = os.path.join(JSON_DB_DIR, 'predictions_history.json')
-REVIEWS_FILE = os.path.join(JSON_DB_DIR, 'reviews.json')
+    # Configure database
+    if DATABASE_URL:
+        app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+        USE_POSTGRESQL = True
+        print("✅ PostgreSQL configured")
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///smart_energy.db'
+        USE_POSTGRESQL = False
+        print("⚠️ Using SQLite - set DATABASE_URL for PostgreSQL")
+    
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 10,
+        'pool_recycle': 3600,
+        'pool_pre_ping': True,
+    }
+    
+    db = SQLAlchemy(app)
 
 # ==================== DATABASE MODELS ====================
-if db:
+
+if db and SQLALCHEMY_AVAILABLE:
     class User(db.Model):
         __tablename__ = 'users'
         
@@ -144,6 +133,7 @@ if db:
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         
         predictions = db.relationship('Prediction', backref='user', lazy=True, cascade='all, delete-orphan')
+        reviews = db.relationship('Review', backref='user', lazy=True, cascade='all, delete-orphan')
         
         def __repr__(self):
             return f'<User {self.email}>'
@@ -152,8 +142,8 @@ if db:
         __tablename__ = 'predictions'
         
         id = db.Column(db.Integer, primary_key=True)
-        user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-        timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+        timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
         prediction = db.Column(db.Float, nullable=False)
         usage_level = db.Column(db.String(20), nullable=False)
         efficiency_score = db.Column(db.Float, nullable=False)
@@ -174,45 +164,48 @@ if db:
         user_name = db.Column(db.String(120), nullable=False)
         rating = db.Column(db.Integer, nullable=False)
         comment = db.Column(db.Text)
-        timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+        timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
         
         def __repr__(self):
             return f'<Review {self.id}>'
-
-# Create tables with app context
-if db:
+    
+    # Create tables with app context
     with app.app_context():
         try:
             db.create_all()
             print("✅ Database tables created/verified")
         except Exception as e:
-            print(f"⚠️ Error creating tables: {e}")
+            print(f"⚠️ Table creation error: {e}")
 
-# ==================== DATABASE INITIALIZATION (JSON Fallback) ====================
+# ==================== JSON FALLBACK PATHS ====================
+
+JSON_DB_DIR = 'data'
+USERS_FILE = os.path.join(JSON_DB_DIR, 'users.json')
+PREDICTIONS_FILE = os.path.join(JSON_DB_DIR, 'predictions_history.json')
+REVIEWS_FILE = os.path.join(JSON_DB_DIR, 'reviews.json')
+
 def init_json_databases():
-    """Initialize JSON database files if they don't exist"""
+    """Initialize JSON database files"""
     from pathlib import Path
     Path(JSON_DB_DIR).mkdir(parents=True, exist_ok=True)
     
     if not os.path.exists(USERS_FILE):
         with open(USERS_FILE, 'w') as f:
             json.dump({}, f, indent=2)
-        print(f"✅ Created {USERS_FILE}")
     
     if not os.path.exists(PREDICTIONS_FILE):
         with open(PREDICTIONS_FILE, 'w') as f:
             json.dump({}, f, indent=2)
-        print(f"✅ Created {PREDICTIONS_FILE}")
     
     if not os.path.exists(REVIEWS_FILE):
         with open(REVIEWS_FILE, 'w') as f:
             json.dump([], f, indent=2)
-        print(f"✅ Created {REVIEWS_FILE}")
 
 if CORS_AVAILABLE:
     CORS(app)
 
 # ==================== EMAIL FUNCTION ====================
+
 def send_email_with_report(user_email, user_name, pdf_buffer):
     """Send email with PDF report attached"""
     try:
@@ -231,16 +224,16 @@ def send_email_with_report(user_email, user_name, pdf_buffer):
                     
                     <p>Thank you for using Smart Energy AI Platform!</p>
                     
-                    <p>Please find attached your comprehensive energy prediction report. 
-                    This report includes:</p>
+                    <p>Please find attached your comprehensive energy prediction report which includes:</p>
                     
                     <ul>
                         <li>Summary statistics of your energy consumption</li>
                         <li>Recent prediction history</li>
                         <li>Usage patterns and efficiency metrics</li>
+                        <li>Recommendations for optimization</li>
                     </ul>
                     
-                    <p>Keep monitoring your energy consumption to optimize efficiency!</p>
+                    <p>Keep monitoring your energy consumption to optimize efficiency and reduce costs!</p>
                     
                     <p style="margin-top: 30px;">
                         <strong>Best regards,</strong><br/>
@@ -259,6 +252,7 @@ def send_email_with_report(user_email, user_name, pdf_buffer):
         
         msg.attach(MIMEText(body, 'html'))
         
+        # Attach PDF
         pdf_buffer.seek(0)
         attachment = MIMEBase('application', 'pdf')
         attachment.set_payload(pdf_buffer.read())
@@ -267,18 +261,22 @@ def send_email_with_report(user_email, user_name, pdf_buffer):
                             f'attachment; filename=energy_report_{datetime.now().strftime("%Y%m%d")}.pdf')
         msg.attach(attachment)
         
+        # Send email
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.send_message(msg)
         server.quit()
         
+        print(f"✅ Email sent to {user_email}")
         return True
+    
     except Exception as e:
-        print(f"Email error: {e}")
+        print(f"❌ Email error: {e}")
         return False
 
 # ==================== AI CONFIGURATION ====================
+
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 GROQ_READY = False
 groq_client = None
@@ -303,30 +301,33 @@ gemini_model = None
 
 if GEMINI_AVAILABLE and GEMINI_API_KEY:
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        model_names = [
-            'models/gemini-2.0-flash-exp',
-            'models/gemini-exp-1206',
-            'models/gemini-flash-latest',
-            'models/gemini-2.0-flash',
-            'models/gemini-1.5-flash',
-            'gemini-pro'
-        ]
-        
-        for model_name in model_names:
-            try:
-                gemini_model = genai.GenerativeModel(model_name)
-                test_response = gemini_model.generate_content("Hi")
-                GEMINI_READY = True
-                print(f"✅ Gemini AI configured with: {model_name} (BACKUP)")
-                break
-            except:
-                continue
-        
-        if not GEMINI_READY:
-            print("❌ All Gemini models failed")
+        if USING_NEW_GEMINI:
+            gemini_client = GoogleGenaiClient(api_key=GEMINI_API_KEY)
+            GEMINI_READY = True
+            print(f"✅ Gemini AI configured (BACKUP) - Using new google-genai")
+        else:
+            genai.configure(api_key=GEMINI_API_KEY)
+            model_names = [
+                'models/gemini-2.0-flash-exp',
+                'models/gemini-exp-1206',
+                'models/gemini-flash-latest',
+                'models/gemini-2.0-flash',
+                'models/gemini-1.5-flash',
+                'gemini-pro'
+            ]
+            
+            for model_name in model_names:
+                try:
+                    gemini_model = genai.GenerativeModel(model_name)
+                    test_response = gemini_model.generate_content("Hi")
+                    GEMINI_READY = True
+                    print(f"✅ Gemini AI configured (BACKUP) - {model_name}")
+                    break
+                except:
+                    continue
     except Exception as e:
         print(f"❌ Gemini configuration error: {e}")
+        GEMINI_READY = False
 
 AI_STATUS = {
     'groq': GROQ_READY,
@@ -421,9 +422,11 @@ def register_user(email, name, password):
             )
             db.session.add(user)
             db.session.commit()
+            print(f"✅ User registered: {email}")
             return True, "User registered successfully"
         except Exception as e:
             db.session.rollback()
+            print(f"❌ Registration error: {e}")
             return False, f"Error: {e}"
     else:
         # JSON fallback
@@ -437,6 +440,7 @@ def register_user(email, name, password):
             'created_at': datetime.now().isoformat()
         }
         save_users(users)
+        print(f"✅ User registered: {email}")
         return True, "User registered successfully"
 
 def login_user(email, password):
@@ -452,8 +456,10 @@ def login_user(email, password):
             if not check_password_hash(user.password_hash, password):
                 return False, "Invalid password"
             
+            print(f"✅ User logged in: {email}")
             return True, user.name
         except Exception as e:
+            print(f"❌ Login error: {e}")
             return False, f"Error: {e}"
     else:
         # JSON fallback
@@ -464,6 +470,7 @@ def login_user(email, password):
         if not check_password_hash(users[email]['password'], password):
             return False, "Invalid password"
         
+        print(f"✅ User logged in: {email}")
         return True, users[email]['name']
 
 # ==================== PREDICTION FUNCTIONS ====================
@@ -532,6 +539,7 @@ def save_prediction(user_email, prediction_data):
             
             db.session.add(prediction)
             db.session.commit()
+            print(f"✅ Prediction saved for {user_email}")
             return True
         except Exception as e:
             db.session.rollback()
@@ -564,6 +572,7 @@ def save_prediction(user_email, prediction_data):
             with open(PREDICTIONS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(history, f, indent=2, ensure_ascii=False)
             
+            print(f"✅ Prediction saved to JSON for {user_email}")
             return True
         except Exception as e:
             print(f"❌ Error saving prediction to JSON: {e}")
@@ -656,6 +665,7 @@ def add_review(user_email, user_name, rating, comment):
             
             db.session.add(review)
             db.session.commit()
+            print(f"✅ Review added")
             return True
         except Exception as e:
             db.session.rollback()
@@ -679,12 +689,13 @@ def add_review(user_email, user_name, rating, comment):
             with open(REVIEWS_FILE, 'w') as f:
                 json.dump(reviews, f, indent=2)
             
+            print(f"✅ Review added to JSON")
             return True
         except Exception as e:
             print(f"❌ Error adding review to JSON: {e}")
             return False
 
-# ==================== AUTHENTICATION DECORATOR ====================
+# ==================== AUTHENTICATION ====================
 
 def login_required(f):
     @wraps(f)
@@ -734,7 +745,7 @@ def extract_with_groq(prompt):
     try:
         response = groq_client.chat.completions.create(
             messages=[
-                {"role": "system", "content": "You are an expert at extracting structured data. Always return valid JSON only."},
+                {"role": "system", "content": "You are an expert at extracting structured data from text. Always return valid JSON only, no markdown or extra text."},
                 {"role": "user", "content": prompt}
             ],
             model="llama-3.3-70b-versatile",
@@ -753,8 +764,9 @@ def extract_with_gemini(prompt):
         return None, "Gemini not available"
     
     try:
-        response = gemini_model.generate_content(prompt)
-        return response.text.strip(), None
+        if gemini_model:
+            response = gemini_model.generate_content(prompt)
+            return response.text.strip(), None
     except Exception as e:
         error_msg = str(e)
         print(f"❌ Gemini extraction failed: {error_msg[:200]}")
@@ -829,6 +841,7 @@ JSON:"""
             data['LightingUsage'] = data['LightingUsage'].capitalize()
         elif 'LightningUsage' in data:
             data['LightingUsage'] = data['LightningUsage'].capitalize()
+            print("⚠️ Fixed typo: LightningUsage → LightingUsage")
         if 'Holiday' in data:
             data['Holiday'] = data['Holiday'].capitalize()
         
@@ -853,8 +866,6 @@ JSON:"""
 
 def rule_based_extraction(text_content):
     """Rule-based fallback extraction using pattern matching"""
-    import re
-    
     print("🔧 Performing rule-based extraction...")
     
     data = {
@@ -901,6 +912,7 @@ def rule_based_extraction(text_content):
     if 'holiday' in text_lower and 'yes' in text_lower:
         data['Holiday'] = 'Yes'
     
+    print(f"✅ Rule-based extraction complete")
     return data
 
 def chat_with_groq(message, system_context):
@@ -928,9 +940,10 @@ def chat_with_gemini(message, system_context):
         return None, "Gemini not available"
     
     try:
-        full_prompt = f"{system_context}\n\nUser message: {message}\n\nYour response:"
-        response = gemini_model.generate_content(full_prompt)
-        return response.text, None
+        if gemini_model:
+            full_prompt = f"{system_context}\n\nUser message: {message}\n\nYour response:"
+            response = gemini_model.generate_content(full_prompt)
+            return response.text, None
     except Exception as e:
         return None, str(e)
 
@@ -969,13 +982,18 @@ Want to try a prediction?"""
 **Option 1 - Prediction Tab:**
 1. Click "Prediction" in the menu
 2. Choose "Manual Entry" or "Upload File"
-3. Enter 8 parameters
+3. Enter 8 parameters (temperature, humidity, occupancy, etc.)
 4. Get instant predictions!
 
 **Option 2 - AI Chat (here!):**
 1. Tell me you want a prediction
-2. I'll ask for each parameter
+2. I'll ask for each parameter step-by-step
 3. You answer, I'll calculate!
+
+**Option 3 - Dashboard:**
+- View analytics and charts
+- See energy trends
+- Download/email reports
 
 Which would you like to try?"""
     
@@ -983,14 +1001,14 @@ Which would you like to try?"""
         return """⚡ **Let's predict your energy consumption!**
 
 I'll need these 8 parameters:
-1. 🌡️ Temperature (°C)
-2. 💧 Humidity (%)
-3. 🏠 Square Footage (sq ft)
-4. 👥 Occupancy (number of people)
-5. 🌱 Renewable Energy (kWh)
-6. ❄️ HVAC Usage (On/Off)
-7. 💡 Lighting Usage (On/Off)
-8. 🎉 Holiday (Yes/No)
+1. 🌡️ **Temperature** (°C)
+2. 💧 **Humidity** (%)
+3. 🏠 **Square Footage** (sq ft)
+4. 👥 **Occupancy** (number of people)
+5. 🌱 **Renewable Energy** (kWh)
+6. ❄️ **HVAC Usage** (On/Off)
+7. 💡 **Lighting Usage** (On/Off)
+8. 🎉 **Holiday** (Yes/No)
 
 Go ahead and provide these values!"""
     
@@ -1002,7 +1020,37 @@ I'm here to help you optimize your energy usage anytime!
 What's next?
 - Try another prediction?
 - Explore the Dashboard?
-- Learn energy-saving tips?"""
+- Learn energy-saving tips?
+- View your energy history?"""
+    
+    elif any(word in message_lower for word in ['tips', 'save energy', 'reduce', 'lower', 'optimize']):
+        return """💡 **Energy-Saving Tips:**
+
+**🌡️ Temperature Control:**
+- Keep thermostat at 22-24°C during winter
+- Use programmable thermostats
+- Close windows when HVAC is on
+- Insulate walls and windows properly
+
+**💡 Lighting:**
+- Switch to LED bulbs (75% less energy)
+- Use natural light during daytime
+- Turn off lights when leaving rooms
+- Install motion sensors
+
+**❄️ HVAC Maintenance:**
+- Regular filter maintenance (monthly)
+- Professional servicing annually
+- Use ceiling fans to distribute air
+- Keep vents clear
+
+**🌱 Renewable Energy:**
+- Install solar panels
+- Use solar water heaters
+- Consider battery storage
+- Get government incentives
+
+Want a personalized prediction to see YOUR savings?"""
     
     else:
         return """I'm your Smart Energy AI Assistant! 🤖
@@ -1011,11 +1059,13 @@ I specialize in:
 - ⚡ **Energy Predictions** - Calculate your consumption
 - 📖 **Platform Help** - Guide you through features  
 - 💡 **Energy Tips** - Optimize your usage
+- 📊 **Analytics** - Track your patterns
 
 Popular commands:
 - "Predict my energy"
 - "How to use this platform"
 - "Give me energy tips"
+- "What is this website"
 
 What would you like to know?"""
 
@@ -1134,8 +1184,7 @@ def generate_pdf_report(user_email):
     buffer.seek(0)
     return buffer
 
-# ==================== ROUTES (Continue in next part...) ====================
-# [ALL YOUR ROUTES REMAIN THE SAME - No changes needed]
+# ==================== ROUTES ====================
 
 @app.route('/api/download-report', methods=['GET'])
 @login_required
@@ -1143,6 +1192,7 @@ def download_report():
     """Generate and download PDF report"""
     try:
         user_email = session.get('user_id')
+        
         pdf_buffer = generate_pdf_report(user_email)
         
         if not pdf_buffer:
@@ -1183,7 +1233,7 @@ def email_report():
         else:
             return jsonify({
                 'success': False,
-                'error': 'Failed to send email. Please check email configuration.'
+                'error': 'Failed to send email'
             }), 500
     
     except Exception as e:
@@ -1283,17 +1333,19 @@ def extract_from_file():
             return jsonify({'success': False, 'error': 'Could not extract text from file'}), 400
         
         print(f"✅ Text extracted ({len(text_content)} characters)")
-        
+
         extracted_data, ai_used = extract_data_with_ai(text_content)
         
         if not extracted_data:
             return jsonify({'success': False, 'error': 'Could not extract energy parameters from file.'}), 400
         
+        # Use timestamp from extraction if available
         if 'DateTime' in extracted_data and extracted_data['DateTime']:
             extracted_data['timestamp'] = extracted_data['DateTime']
         else:
             extracted_data['timestamp'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
         
+        # Auto-generate prediction
         try:
             features_df = create_features(extracted_data)
             
@@ -1310,14 +1362,15 @@ def extract_from_file():
             is_high_usage = prediction > 80
             efficiency_score = max(0, min(100, 100 - (prediction - 50)))
             
+            # Generate recommendations
             recommendations = []
-            if extracted_data['Temperature'] > 25 and extracted_data['HVACUsage'] == 'On':
+            if extracted_data.get('Temperature', 0) > 25 and extracted_data.get('HVACUsage') == 'On':
                 recommendations.append("Consider raising thermostat by 2°C to save energy")
-            if extracted_data['Occupancy'] > 6 and extracted_data['LightingUsage'] == 'On':
+            if extracted_data.get('Occupancy', 0) > 6 and extracted_data.get('LightingUsage') == 'On':
                 recommendations.append("Use natural lighting when possible with high occupancy")
             if prediction > 85:
                 recommendations.append("Peak usage detected - consider load balancing")
-            if extracted_data['RenewableEnergy'] < 5:
+            if extracted_data.get('RenewableEnergy', 0) < 5:
                 recommendations.append("Increase renewable energy usage to reduce costs")
             
             prediction_result = {
@@ -1335,6 +1388,7 @@ def extract_from_file():
             print(f"❌ Auto-prediction error: {e}")
             prediction_result = None
         
+        # Save prediction to database
         if prediction_result:
             save_prediction(session.get('user_id'), {
                 'prediction': prediction_result['prediction'],
@@ -1482,6 +1536,7 @@ def predict():
         print(f"📤 Response: {response}")
         print("="*60 + "\n")
         
+        # Save prediction
         save_prediction(session.get('user_id'), {
             'prediction': response['prediction'],
             'usage_level': response['usage_level'],
@@ -1513,23 +1568,25 @@ YOUR ROLE AND CAPABILITIES:
 
 1. WEBSITE GUIDANCE - Explain how to use the platform:
    - Prediction tab: Manual entry or file upload for predictions
-   - AI Chat: Conversational predictions
+   - AI Chat: Conversational predictions (where we are now)
    - Dashboard: Visual analytics and charts
    - Reviews: User feedback section
+   - About: Information about the technology
 
 2. WEBSITE PURPOSE - Explain what this does:
    - Uses Machine Learning to predict energy consumption
    - Analyzes: Temperature, Humidity, Occupancy, HVAC/Lighting usage, Square footage, Renewable energy, Holiday status
-   - Provides: Predictions in kWh, Usage level, Efficiency score, Recommendations
+   - Provides: Predictions in kWh, Usage level, Efficiency score, Personalized recommendations
+   - Visualizes: Energy patterns, device breakdown, trends
 
 3. ENERGY PREDICTIONS - Guide users through predictions:
-   - When users want predictions, ask for the 8 parameters step-by-step
-   - Be encouraging and helpful
+   - When users want predictions, ask step-by-step for the 8 parameters
+   - Be encouraging and helpful throughout the process
 
 RESPONSE STYLE:
 - Keep responses to 2-3 sentences unless explaining features
 - Be conversational and helpful
-- Focus on energy and sustainability"""
+- Focus on energy, sustainability, and this platform"""
 
         # Layer 1: Try Groq (PRIMARY)
         print("🟦 Layer 1: Trying Groq (Primary)...")
@@ -1570,36 +1627,17 @@ def submit_review():
         data = request.get_json()
         user_email = session.get('user_id')
         
-        if USE_POSTGRESQL and db:
-            # Get user
-            user = User.query.filter_by(email=user_email).first()
-            if not user:
-                return jsonify({'success': False, 'error': 'User not found'}), 404
-            
-            success = add_review(
-                user_email=user_email,
-                user_name=data.get('user_name', 'Anonymous'),
-                rating=data.get('rating', 5),
-                comment=data.get('comment', '')
-            )
-            
-            if success:
-                return jsonify({'success': True, 'message': 'Thank you!'})
-            else:
-                return jsonify({'success': False, 'error': 'Failed to save review'}), 400
+        success = add_review(
+            user_email=user_email,
+            user_name=data.get('user_name', 'Anonymous'),
+            rating=data.get('rating', 5),
+            comment=data.get('comment', '')
+        )
+        
+        if success:
+            return jsonify({'success': True, 'message': 'Thank you for your review!'})
         else:
-            # JSON fallback
-            success = add_review(
-                user_email=user_email,
-                user_name=data.get('user_name', 'Anonymous'),
-                rating=data.get('rating', 5),
-                comment=data.get('comment', '')
-            )
-            
-            if success:
-                return jsonify({'success': True, 'message': 'Thank you!'})
-            else:
-                return jsonify({'success': False, 'error': 'Failed to save review'}), 400
+            return jsonify({'success': False, 'error': 'Failed to save review'}), 400
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
@@ -1638,7 +1676,7 @@ def get_charts_data():
 @app.route('/api/system-status', methods=['GET'])
 @login_required
 def system_status():
-    """Return current system status"""
+    """Return current AI system status"""
     return jsonify({
         'success': True,
         'database': {
@@ -1789,19 +1827,17 @@ def get_dashboard_stats():
 # ==================== APP STARTUP ====================
 
 if __name__ == '__main__':
+    init_json_databases()
     print("\n" + "="*60)
     print("🚀 SMART ENERGY ANALYSIS SERVER")
     print("="*60)
-    
-    # Initialize JSON databases (always for fallback)
-    init_json_databases()
-    print("✅ JSON fallback initialized\n")
+    print("✅ Database initialization complete\n")
     
     # Check database type
     if USE_POSTGRESQL and db:
         print("📊 Database: PostgreSQL ✅")
     else:
-        print("📊 Database: SQLite (set DATABASE_URL for PostgreSQL)")
+        print("📊 Database: JSON Fallback ⚠️")
     
     print(f"✅ ML Model: {'Loaded' if model else 'Using Fallback'}")
     print(f"\n🤖 AI SYSTEMS (NEW ORDER):")
@@ -1815,7 +1851,7 @@ if __name__ == '__main__':
         print(f"   To enable AI features:")
         print(f"   1. For Groq (Primary): pip install groq")
         print(f"      Add GROQ_API_KEY to .env")
-        print(f"   2. For Gemini (Backup): pip install google-generativeai")
+        print(f"   2. For Gemini (Backup): pip install google-genai")
         print(f"      Add GEMINI_API_KEY to .env")
     
     print(f"\n📁 FILE PROCESSING:")
