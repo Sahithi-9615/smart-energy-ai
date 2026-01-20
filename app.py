@@ -5,6 +5,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 import secrets
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from io import BytesIO
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 
 # Try to import CORS
 try:
@@ -52,6 +64,12 @@ except ImportError:
 
 load_dotenv()
 
+# Email Configuration
+EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'your-email@gmail.com')  # Your Gmail
+EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', 'your-app-password')  # Gmail App Password
+SMTP_SERVER = 'smtp.gmail.com'
+SMTP_PORT = 587
+
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(32))
 app.permanent_session_lifetime = timedelta(hours=24)
@@ -67,8 +85,116 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 USERS_FILE = 'users.json'
 
+PREDICTIONS_FILE = 'predictions_history.json'
+
+def load_predictions_history():
+    """Load prediction history from JSON file"""
+    if os.path.exists(PREDICTIONS_FILE):
+        try:
+            with open(PREDICTIONS_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_prediction(user_email, prediction_data):
+    """Save a prediction to user's history"""
+    history = load_predictions_history()
+    
+    if user_email not in history:
+        history[user_email] = []
+    
+    prediction_entry = {
+        'timestamp': datetime.now().isoformat(),
+        'prediction': prediction_data['prediction'],
+        'usage_level': prediction_data['usage_level'],
+        'efficiency_score': prediction_data['efficiency_score'],
+        'temperature': prediction_data.get('temperature'),
+        'occupancy': prediction_data.get('occupancy'),
+        'hvac': prediction_data.get('hvac'),
+        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+    
+    history[user_email].append(prediction_entry)
+    history[user_email] = history[user_email][-50:]  # Keep last 50
+    
+    with open(PREDICTIONS_FILE, 'w') as f:
+        json.dump(history, f, indent=2)
+
 if CORS_AVAILABLE:
     CORS(app)
+
+def send_email_with_report(user_email, user_name, pdf_buffer):
+    """Send email with PDF report attached"""
+    
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_SENDER
+        msg['To'] = user_email
+        msg['Subject'] = 'Your Smart Energy AI - Prediction Report'
+        
+        # Email body
+        body = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #00f0ff;">Smart Energy AI - Prediction Report</h2>
+                    
+                    <p>Hello {user_name},</p>
+                    
+                    <p>Thank you for using Smart Energy AI Platform!</p>
+                    
+                    <p>Please find attached your comprehensive energy prediction report. 
+                    This report includes:</p>
+                    
+                    <ul>
+                        <li>Summary statistics of your energy consumption</li>
+                        <li>Recent prediction history</li>
+                        <li>Usage patterns and efficiency metrics</li>
+                    </ul>
+                    
+                    <p>Keep monitoring your energy consumption to optimize efficiency!</p>
+                    
+                    <p style="margin-top: 30px;">
+                        <strong>Best regards,</strong><br/>
+                        Smart Energy AI Team
+                    </p>
+                    
+                    <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+                    
+                    <p style="font-size: 12px; color: #666;">
+                        This is an automated message. Please do not reply to this email.
+                    </p>
+                </div>
+            </body>
+        </html>
+        """
+        
+        msg.attach(MIMEText(body, 'html'))
+        
+        # Attach PDF
+        pdf_buffer.seek(0)
+        attachment = MIMEBase('application', 'pdf')
+        attachment.set_payload(pdf_buffer.read())
+        encoders.encode_base64(attachment)
+        attachment.add_header('Content-Disposition', 
+                            f'attachment; filename=energy_report_{datetime.now().strftime("%Y%m%d")}.pdf')
+        msg.attach(attachment)
+        
+        # Send email
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+        return True
+    
+    except Exception as e:
+        print(f"Email error: {e}")
+        return False
+    
 
 # ==================== AI CONFIGURATION ====================
 
@@ -642,7 +768,190 @@ I specialize in:
 
 What would you like to know?"""
 
+def generate_pdf_report(user_email):
+    """Generate PDF report for user's energy predictions"""
+    
+    # Load user data
+    users = load_users()
+    history = load_predictions_history()
+    user_predictions = history.get(user_email, [])
+    user_data = users.get(user_email, {})
+    
+    if not user_predictions:
+        return None
+    
+    # Create PDF in memory
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#00f0ff'),
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        textColor=colors.HexColor('#00f0ff'),
+        spaceAfter=12,
+        spaceBefore=12
+    )
+    
+    # Title
+    title = Paragraph("Smart Energy AI - Prediction Report", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # User Info
+    user_info = Paragraph(f"<b>User:</b> {user_data.get('name', 'N/A')}<br/>"
+                          f"<b>Email:</b> {user_email}<br/>"
+                          f"<b>Report Generated:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 
+                          styles['Normal'])
+    elements.append(user_info)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Summary Statistics
+    total = len(user_predictions)
+    avg_consumption = sum(p['prediction'] for p in user_predictions) / total
+    avg_efficiency = sum(p['efficiency_score'] for p in user_predictions) / total
+    high_count = sum(1 for p in user_predictions if p['usage_level'] == 'High')
+    
+    elements.append(Paragraph("Summary Statistics", heading_style))
+    
+    summary_data = [
+        ['Metric', 'Value'],
+        ['Total Predictions', str(total)],
+        ['Average Consumption', f'{avg_consumption:.2f} kWh'],
+        ['Average Efficiency', f'{avg_efficiency:.1f}%'],
+        ['High Usage Events', str(high_count)],
+        ['High Usage Percentage', f'{(high_count/total*100):.1f}%']
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#00f0ff')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    elements.append(summary_table)
+    elements.append(Spacer(1, 0.4*inch))
+    
+    # Recent Predictions
+    elements.append(Paragraph("Recent Predictions (Last 10)", heading_style))
+    
+    prediction_data = [['Date', 'Consumption', 'Usage Level', 'Efficiency']]
+    
+    for pred in user_predictions[-10:][::-1]:
+        prediction_data.append([
+            pred['date'],
+            f"{pred['prediction']} kWh",
+            pred['usage_level'],
+            f"{pred['efficiency_score']}%"
+        ])
+    
+    prediction_table = Table(prediction_data, colWidths=[2*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+    prediction_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#00f0ff')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 9)
+    ]))
+    
+    elements.append(prediction_table)
+    elements.append(Spacer(1, 0.4*inch))
+    
+    # Footer
+    footer = Paragraph("<i>Generated by Smart Energy AI Platform</i>", 
+                      ParagraphStyle('Footer', parent=styles['Normal'], 
+                                   fontSize=8, textColor=colors.grey, alignment=TA_CENTER))
+    elements.append(footer)
+    
+    # Build PDF
+    doc.build(elements)
+    
+    buffer.seek(0)
+    return buffer
+
 # ==================== ROUTES ====================
+
+@app.route('/api/download-report', methods=['GET'])
+@login_required
+def download_report():
+    """Generate and download PDF report"""
+    try:
+        user_email = session.get('user_id')
+        
+        # Generate PDF
+        pdf_buffer = generate_pdf_report(user_email)
+        
+        if not pdf_buffer:
+            return jsonify({'success': False, 'error': 'No predictions available'}), 400
+        
+        # Send file
+        from flask import send_file
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'energy_report_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    
+    except Exception as e:
+        print(f"Download report error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/email-report', methods=['POST'])
+@login_required
+def email_report():
+    """Generate PDF report and email to user"""
+    try:
+        user_email = session.get('user_id')
+        users = load_users()
+        user_name = users.get(user_email, {}).get('name', 'User')
+        
+        # Generate PDF
+        pdf_buffer = generate_pdf_report(user_email)
+        
+        if not pdf_buffer:
+            return jsonify({'success': False, 'error': 'No predictions available'}), 400
+        
+        # Send email
+        success = send_email_with_report(user_email, user_name, pdf_buffer)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Report sent successfully to {user_email}'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to send email. Please check email configuration.'
+            }), 500
+    
+    except Exception as e:
+        print(f"Email report error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -806,6 +1115,16 @@ def extract_from_file():
             print(f"❌ Auto-prediction error: {e}")
             prediction_result = None
         
+        # Save prediction to history
+        if prediction_result:
+            save_prediction(session.get('user_id'), {
+                'prediction': prediction_result['prediction'],
+                'usage_level': prediction_result['usage_level'],
+                'efficiency_score': prediction_result['efficiency_score'],
+                'temperature': extracted_data.get('Temperature'),
+                'occupancy': extracted_data.get('Occupancy'),
+                'hvac': extracted_data.get('HVACUsage')
+            })
         return jsonify({
             'success': True,
             'data': extracted_data,
@@ -944,6 +1263,15 @@ def predict():
         print(f"📤 Response: {response}")
         print("="*60 + "\n")
         
+        # Save prediction to history
+        save_prediction(session.get('user_id'), {
+            'prediction': response['prediction'],
+            'usage_level': response['usage_level'],
+            'efficiency_score': response['efficiency_score'],
+            'temperature': data.get('Temperature'),
+            'occupancy': data.get('Occupancy'),
+            'hvac': data.get('HVACUsage')
+        })
         return jsonify(response)
     
     except Exception as e:
@@ -1110,6 +1438,136 @@ def system_status():
             'docx': DOCX_AVAILABLE
         }
     })
+# ==================== USER PROFILE API ====================
+
+@app.route('/api/user-profile', methods=['GET'])
+@login_required
+def get_user_profile():
+    """Get current user's profile information"""
+    try:
+        user_email = session.get('user_id')
+        users = load_users()
+        
+        if user_email in users:
+            user_data = users[user_email]
+            history = load_predictions_history()
+            user_predictions = history.get(user_email, [])
+            
+            total_predictions = len(user_predictions)
+            avg_consumption = 0
+            avg_efficiency = 0
+            
+            if user_predictions:
+                avg_consumption = sum(p['prediction'] for p in user_predictions) / total_predictions
+                avg_efficiency = sum(p['efficiency_score'] for p in user_predictions) / total_predictions
+            
+            profile = {
+                'success': True,
+                'name': user_data['name'],
+                'email': user_email,
+                'member_since': user_data.get('created_at', 'N/A'),
+                'total_predictions': total_predictions,
+                'avg_consumption': round(avg_consumption, 2),
+                'avg_efficiency': round(avg_efficiency, 1)
+            }
+            
+            return jsonify(profile)
+        else:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/prediction-history', methods=['GET'])
+@login_required
+def get_prediction_history():
+    """Get user's prediction history"""
+    try:
+        user_email = session.get('user_id')
+        history = load_predictions_history()
+        user_predictions = history.get(user_email, [])
+        
+        return jsonify({
+            'success': True,
+            'predictions': user_predictions[-20:][::-1]  # Last 20, newest first
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/dashboard-stats', methods=['GET'])
+@login_required
+def get_dashboard_stats():
+    """Get comprehensive dashboard statistics"""
+    try:
+        user_email = session.get('user_id')
+        history = load_predictions_history()
+        user_predictions = history.get(user_email, [])
+        
+        if not user_predictions:
+            return jsonify({
+                'success': True,
+                'stats': {
+                    'total_predictions': 0,
+                    'avg_consumption': 0,
+                    'avg_efficiency': 0,
+                    'total_energy_predicted': 0,
+                    'high_usage_count': 0,
+                    'low_usage_count': 0,
+                    'trend': 'stable'
+                },
+                'recent': [],
+                'consumption_trend': []
+            })
+        
+        total = len(user_predictions)
+        avg_consumption = sum(p['prediction'] for p in user_predictions) / total
+        avg_efficiency = sum(p['efficiency_score'] for p in user_predictions) / total
+        total_energy = sum(p['prediction'] for p in user_predictions)
+        high_count = sum(1 for p in user_predictions if p['usage_level'] == 'High')
+        low_count = total - high_count
+        
+        trend = 'stable'
+        if len(user_predictions) >= 10:
+            recent_avg = sum(p['prediction'] for p in user_predictions[-5:]) / 5
+            previous_avg = sum(p['prediction'] for p in user_predictions[-10:-5]) / 5
+            
+            if recent_avg > previous_avg * 1.1:
+                trend = 'increasing'
+            elif recent_avg < previous_avg * 0.9:
+                trend = 'decreasing'
+        
+        recent_10 = user_predictions[-10:] if len(user_predictions) >= 10 else user_predictions
+        trend_data = [
+            {
+                'date': p['date'],
+                'consumption': p['prediction']
+            }
+            for p in recent_10
+        ]
+        
+        stats = {
+            'success': True,
+            'stats': {
+                'total_predictions': total,
+                'avg_consumption': round(avg_consumption, 2),
+                'avg_efficiency': round(avg_efficiency, 1),
+                'total_energy_predicted': round(total_energy, 2),
+                'high_usage_count': high_count,
+                'low_usage_count': low_count,
+                'trend': trend
+            },
+            'recent': user_predictions[-5:][::-1],
+            'consumption_trend': trend_data
+        }
+        
+        return jsonify(stats)
+    
+    except Exception as e:
+        print(f"Dashboard stats error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("\n" + "="*60)
