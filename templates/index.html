@@ -1906,59 +1906,69 @@
     </div>
 </div>
     
-    <!-- About Tab -->
-    <div id="about" class="tab-content">
-        <div class="container">
-            <div class="about-content">
-                <div class="section-header">
-                    <h2 class="section-title">About This Project</h2>
-                </div>
-                
-                <div class="about-card">
-                    <h3 class="about-title">What We Do</h3>
-                    <p class="about-text">
-                        Our Smart Energy Analysis and Prediction system leverages advanced machine learning 
-                        algorithms to predict energy consumption patterns with remarkable accuracy. By analyzing 
-                        multiple factors including temperature, occupancy, HVAC usage, and temporal patterns, 
-                        we provide actionable insights to optimize energy usage.
-                    </p>
-                </div>
-                
-                <div class="about-card">
-                    <h3 class="about-title">Key Features</h3>
-                    <p class="about-text">
-                        ✨ <strong>ML-Powered Predictions:</strong> Using Random Forest algorithm<br><br>
-                        📊 <strong>Device-Level Insights:</strong> Understand appliance contributions<br><br>
-                        🎯 <strong>Personalized Recommendations:</strong> Tailored suggestions<br><br>
-                        🤖 <strong>AI Chatbot:</strong> Interactive predictions<br><br>
-                        📈 <strong>Visual Analytics:</strong> Comprehensive dashboards
-                    </p>
-                </div>
-                
-                <div class="about-card">
-                    <h3 class="about-title">Technology Stack</h3>
-                    <div class="tech-stack">
-                        <div class="tech-item">
-                            <i class="fab fa-python"></i>
-                            <div>Python</div>
-                        </div>
-                        <div class="tech-item">
-                            <i class="fas fa-brain"></i>
-                            <div>Scikit-learn</div>
-                        </div>
-                        <div class="tech-item">
-                            <i class="fas fa-flask"></i>
-                            <div>Flask</div>
-                        </div>
-                        <div class="tech-item">
-                            <i class="fas fa-chart-bar"></i>
-                            <div>Chart.js</div>
-                        </div>
+   <!-- About Tab -->
+<!-- About Tab -->
+<div id="about" class="tab-content">
+    <div class="container">
+        <div class="about-content">
+            <div class="section-header">
+                <h2 class="section-title">About This Project</h2>
+            </div>
+            
+            <div class="about-card">
+                <h3 class="about-title">What We Do</h3>
+                <p class="about-text">
+                    Smart Energy AI uses machine learning and artificial intelligence to predict 
+                    energy consumption patterns with high accuracy. Our platform analyzes temperature, 
+                    occupancy, HVAC usage, and other factors to provide actionable insights for 
+                    optimizing energy usage and reducing costs.
+                </p>
+            </div>
+            
+            <div class="about-card">
+                <h3 class="about-title">Key Features</h3>
+                <p class="about-text">
+                    🎯 ML-powered predictions with 95% accuracy<br><br>
+                    🤖 AI chatbot with voice support<br><br>
+                    📄 PDF and document analysis<br><br>
+                    📊 Real-time analytics dashboard<br><br>
+                    💡 Personalized recommendations<br><br>
+                    📧 Downloadable energy reports
+                </p>
+            </div>
+            
+            <div class="about-card">
+                <h3 class="about-title">Technology Stack</h3>
+                <div class="tech-stack" style="grid-template-columns: repeat(3, 1fr); max-width: 700px; margin: 0 auto;">
+                    <div class="tech-item">
+                        <i class="fab fa-python"></i>
+                        <div>Python</div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-brain"></i>
+                        <div>Machine Learning</div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-robot"></i>
+                        <div>AI (Groq/Gemini)</div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-database"></i>
+                        <div>MongoDB</div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-flask"></i>
+                        <div>Flask</div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <div>Chart.js</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
     
     <!-- Guide Tab -->
     <div id="guide" class="tab-content">
@@ -2423,10 +2433,21 @@ async function makePredictionFromParams(params) {
         if (loadingEl) loadingEl.remove();
         
         if (result.success || result.prediction) {
-            displayPredictionResult(result);
-            resetAccumulatedParams();
-            resetChatState();
-        } else {
+    displayPredictionResult(result);
+    resetAccumulatedParams();
+    resetChatState();
+    
+    // Auto-refresh user profile stats
+    setTimeout(() => {
+        loadUserProfile();
+        
+        // If dashboard is open, refresh it too
+        const dashboardTab = document.getElementById('dashboard');
+        if (dashboardTab && dashboardTab.classList.contains('active')) {
+            loadDashboardData();
+        }
+    }, 500);
+} else {
             throw new Error(result.error || 'Prediction failed');
         }
         
@@ -2629,10 +2650,21 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
                 const result = await response.json();
                 
                 if (result.success) {
-                    displayResults(result);
-                } else {
-                    resultsCard.innerHTML = `<div class="error-message">Error: ${result.error || 'Unknown error occurred'}</div>`;
-                }
+    displayResults(result);
+    
+    // Auto-refresh user profile stats
+    setTimeout(() => {
+        loadUserProfile();
+        
+        // If dashboard is open, refresh it too
+        const dashboardTab = document.getElementById('dashboard');
+        if (dashboardTab && dashboardTab.classList.contains('active')) {
+            loadDashboardData();
+        }
+    }, 500);
+} else {
+    resultsCard.innerHTML = `<div class="error-message">Error: ${result.error || 'Unknown error occurred'}</div>`;
+}
             } catch (error) {
                 resultsCard.innerHTML = `<div class="error-message">Error: ${error.message}. Make sure the server is running!</div>`;
             }
@@ -3088,37 +3120,55 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
         });
         
         document.getElementById('reviewForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const response = await fetch('/api/submit-review', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: document.getElementById('reviewName').value,
-                        rating: currentRating,
-                        comment: document.getElementById('reviewComment').value
-                    })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    alert('Thank you for your review!');
-                    document.getElementById('reviewForm').reset();
-                    loadReviews();
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
+    e.preventDefault();
+    try {
+        // Get the name from the input field
+        const reviewName = document.getElementById('reviewName').value.trim();
+        
+        if (!reviewName) {
+            alert('Please enter your name');
+            return;
+        }
+        
+        const response = await fetch('/api/submit-review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: reviewName,
+                rating: currentRating,
+                comment: document.getElementById('reviewComment').value
+            })
         });
+        const result = await response.json();
+        if (result.success) {
+            alert('Thank you for your review!');
+            document.getElementById('reviewForm').reset();
+            
+            // Reset stars to 5
+            currentRating = 5;
+            document.querySelectorAll('.star').forEach((s, index) => {
+                s.classList.toggle('active', index < 5);
+            });
+            
+            loadReviews();
+        } else {
+            alert('Error: ' + (result.error || 'Failed to submit review'));
+        }
+    } catch (error) {
+        console.error('Review submission error:', error);
+        alert('Error: ' + error.message);
+    }
+});
         
         async function loadReviews() {
             try {
                 const response = await fetch('/api/get-reviews');
                 const result = await response.json();
                 if (result.success && result.reviews.length > 0) {
-                    document.getElementById('reviewsList').innerHTML = result.reviews.reverse().map(review => `
-                        <div class="review-card">
-                            <div class="review-header">
-                                <span class="review-author">${review.name}</span>
+                   document.getElementById('reviewsList').innerHTML = result.reviews.reverse().map(review => `
+    <div class="review-card">
+        <div class="review-header">
+            <span class="review-author">${review.user_name || review.name || 'Anonymous'}</span>
                                 <span class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
                             </div>
                             <p>${review.comment}</p>
