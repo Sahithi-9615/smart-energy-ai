@@ -594,15 +594,31 @@ def send_email_with_report(user_email, user_name, pdf_buffer):
                             f'attachment; filename=energy_report_{datetime.now().strftime("%Y%m%d")}.pdf')
         msg.attach(attachment)
         
+        print(f"📧 Connecting to SMTP server {SMTP_SERVER}:{SMTP_PORT}...")
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
+        
+        print(f"📧 Logging in as {EMAIL_SENDER}...")
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+        
+        print(f"📧 Sending email to {user_email}...")
         server.send_message(msg)
         server.quit()
         
+        print(f"✅ Email sent successfully to {user_email}")
         return True
+    
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"❌ Email authentication failed: {e}")
+        print("   Check that EMAIL_SENDER and EMAIL_PASSWORD are correct")
+        return False
+    except smtplib.SMTPException as e:
+        print(f"❌ SMTP error: {e}")
+        return False
     except Exception as e:
-        print(f"Email error: {e}")
+        print(f"❌ Email error: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 # ==================== AUTHENTICATION DECORATOR ====================
@@ -1158,6 +1174,19 @@ def download_report():
 def email_report():
     """Generate PDF report and email to user"""
     try:
+        # Check email configuration first
+        if not EMAIL_SENDER or EMAIL_SENDER == 'your-email@gmail.com':
+            return jsonify({
+                'success': False, 
+                'error': 'Email not configured. Please contact administrator to set up EMAIL_SENDER and EMAIL_PASSWORD in environment variables.'
+            }), 500
+        
+        if not EMAIL_PASSWORD or EMAIL_PASSWORD == 'your-app-password':
+            return jsonify({
+                'success': False,
+                'error': 'Email password not configured. Please contact administrator.'
+            }), 500
+        
         user_email = session.get('user_id')
         users = load_users()
         user_name = users.get(user_email, {}).get('name', 'User')
@@ -1165,7 +1194,7 @@ def email_report():
         pdf_buffer = generate_pdf_report(user_email)
         
         if not pdf_buffer:
-            return jsonify({'success': False, 'error': 'No predictions available'}), 400
+            return jsonify({'success': False, 'error': 'No predictions available. Make some predictions first!'}), 400
         
         success = send_email_with_report(user_email, user_name, pdf_buffer)
         
@@ -1177,12 +1206,14 @@ def email_report():
         else:
             return jsonify({
                 'success': False,
-                'error': 'Failed to send email. Please check email configuration.'
+                'error': 'Failed to send email. Please verify your email address or contact support.'
             }), 500
     
     except Exception as e:
         print(f"Email report error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Email error: {str(e)}'}), 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -1703,7 +1734,7 @@ if __name__ == '__main__':
     print("✅ Database initialization complete\n")
     
     # Check database type
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         print("📊 Database: MongoDB Atlas ✅")
     else:
         print("📊 Database: JSON Fallback ⚠️")
