@@ -10,3 +10,6 @@ gemini_chatbot.py
 start.sh
 users.json
 .env.example
+reviews.example.json
+users.example.json
+predictions_history.example.json
