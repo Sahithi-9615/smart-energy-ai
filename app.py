@@ -231,7 +231,7 @@ except Exception as e:
 
 def load_users():
     """Load users from MongoDB or JSON fallback"""
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             users_dict = {}
             for user in db.users.find():
@@ -258,7 +258,7 @@ def load_users():
 
 def save_users(users):
     """Save users to MongoDB or JSON fallback"""
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             for email, data in users.items():
                 db.users.update_one(
@@ -289,7 +289,7 @@ def register_user(email, name, password):
     """Register a new user"""
     email = email.lower().strip()
     
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             if db.users.find_one({'email': email}):
                 return False, "User already exists"
@@ -321,7 +321,7 @@ def login_user(email, password):
     """Verify user credentials"""
     email = email.lower().strip()
     
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             user = db.users.find_one({'email': email})
             if not user:
@@ -348,7 +348,7 @@ def login_user(email, password):
 
 def load_predictions_history():
     """Load prediction history from MongoDB or JSON"""
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             history = {}
             for pred in db.predictions.find():
@@ -387,7 +387,7 @@ def save_prediction(user_email, prediction_data):
     """Save a prediction to database"""
     user_email = user_email.lower().strip()
     
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             db.predictions.insert_one({
                 'user_email': user_email,
@@ -440,7 +440,7 @@ def get_user_predictions(user_email):
     """Get predictions for a specific user"""
     user_email = user_email.lower().strip()
     
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             predictions = list(db.predictions.find(
                 {'user_email': user_email}
@@ -471,7 +471,7 @@ def get_user_predictions(user_email):
 
 def load_reviews():
     """Load all reviews from MongoDB or JSON"""
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             reviews = list(db.reviews.find().sort('timestamp', -1))
             return [
@@ -503,7 +503,7 @@ def add_review(user_email, user_name, rating, comment):
     """Add a new review"""
     user_email = user_email.lower().strip()
     
-    if USE_MONGODB and db:
+    if USE_MONGODB and db is not None:
         try:
             db.reviews.insert_one({
                 'user_email': user_email,
