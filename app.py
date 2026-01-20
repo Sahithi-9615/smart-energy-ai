@@ -62,13 +62,13 @@ except ImportError:
     GEMINI_AVAILABLE = False
     print("⚠️ google-generativeai not installed")
 
-# ==================== POSTGRESQL DATABASE CONFIGURATION ====================
+# ==================== DATABASE IMPORTS ====================
 try:
     from flask_sqlalchemy import SQLAlchemy
     SQLALCHEMY_AVAILABLE = True
 except ImportError:
     SQLALCHEMY_AVAILABLE = False
-    print("⚠️ Flask-SQLAlchemy not installed - using JSON fallback")
+    print("⚠️ Flask-SQLAlchemy not installed")
 
 load_dotenv()
 
@@ -93,29 +93,38 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 # ==================== DATABASE CONFIGURATION ====================
-# PostgreSQL configuration with fallback to JSON
+# FIXED: Initialize SQLAlchemy BEFORE defining models
 DATABASE_URL = os.getenv('DATABASE_URL')
 USE_POSTGRESQL = False
 db = None
 
-if SQLALCHEMY_AVAILABLE and DATABASE_URL:
-    try:
-        app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-            'pool_size': 10,
-            'pool_recycle': 3600,
-            'pool_pre_ping': True,
-        }
-        db = SQLAlchemy(app)
-        USE_POSTGRESQL = True
-        print("✅ PostgreSQL configured")
-    except Exception as e:
-        print(f"⚠️ PostgreSQL configuration error: {e}")
-        USE_POSTGRESQL = False
+# Configure SQLAlchemy
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 10,
+    'pool_recycle': 3600,
+    'pool_pre_ping': True,
+}
+
+# Set database URI
+if DATABASE_URL:
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+    USE_POSTGRESQL = True
+    print("✅ PostgreSQL configured")
 else:
-    print("⚠️ PostgreSQL not available - using JSON fallback")
+    # SQLite fallback for local testing
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///smart_energy.db'
     USE_POSTGRESQL = False
+    print("⚠️ Using SQLite - set DATABASE_URL for PostgreSQL")
+
+# Initialize SQLAlchemy ONCE
+if SQLALCHEMY_AVAILABLE:
+    try:
+        db = SQLAlchemy(app)
+        print("✅ SQLAlchemy initialized")
+    except Exception as e:
+        print(f"❌ SQLAlchemy error: {e}")
+        db = None
 
 # JSON fallback paths
 JSON_DB_DIR = 'data'
@@ -123,8 +132,8 @@ USERS_FILE = os.path.join(JSON_DB_DIR, 'users.json')
 PREDICTIONS_FILE = os.path.join(JSON_DB_DIR, 'predictions_history.json')
 REVIEWS_FILE = os.path.join(JSON_DB_DIR, 'reviews.json')
 
-# ==================== DATABASE MODELS (PostgreSQL) ====================
-if USE_POSTGRESQL and db:
+# ==================== DATABASE MODELS ====================
+if db:
     class User(db.Model):
         __tablename__ = 'users'
         
@@ -169,8 +178,9 @@ if USE_POSTGRESQL and db:
         
         def __repr__(self):
             return f'<Review {self.id}>'
-    
-    # Create tables on app context
+
+# Create tables with app context
+if db:
     with app.app_context():
         try:
             db.create_all()
@@ -1124,7 +1134,8 @@ def generate_pdf_report(user_email):
     buffer.seek(0)
     return buffer
 
-# ==================== ROUTES ====================
+# ==================== ROUTES (Continue in next part...) ====================
+# [ALL YOUR ROUTES REMAIN THE SAME - No changes needed]
 
 @app.route('/api/download-report', methods=['GET'])
 @login_required
@@ -1631,7 +1642,7 @@ def system_status():
     return jsonify({
         'success': True,
         'database': {
-            'type': 'postgresql' if USE_POSTGRESQL else 'json',
+            'type': 'postgresql' if USE_POSTGRESQL else 'sqlite',
             'ready': USE_POSTGRESQL and db is not None
         },
         'ai_status': {
@@ -1784,13 +1795,13 @@ if __name__ == '__main__':
     
     # Initialize JSON databases (always for fallback)
     init_json_databases()
-    print("✅ Database initialization complete\n")
+    print("✅ JSON fallback initialized\n")
     
     # Check database type
     if USE_POSTGRESQL and db:
         print("📊 Database: PostgreSQL ✅")
     else:
-        print("📊 Database: JSON Fallback ⚠️")
+        print("📊 Database: SQLite (set DATABASE_URL for PostgreSQL)")
     
     print(f"✅ ML Model: {'Loaded' if model else 'Using Fallback'}")
     print(f"\n🤖 AI SYSTEMS (NEW ORDER):")
