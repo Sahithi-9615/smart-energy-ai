@@ -18,8 +18,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from datetime import datetime, timedelta
+import re
 
-# Try CORS import
 try:
     from flask_cors import CORS
     CORS_AVAILABLE = True
@@ -30,7 +30,6 @@ import pickle
 import numpy as np
 import pandas as pd
 import json
-import re
 
 # File processing
 try:
@@ -38,33 +37,22 @@ try:
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
+    print("⚠️ PyPDF2 not installed - PDF extraction disabled")
 
 try:
     import docx
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
+    print("⚠️ python-docx not installed - DOCX extraction disabled")
 
-# Groq AI
+# Groq AI - PRIMARY (ONLY AI SYSTEM - NO GEMINI)
 try:
     from groq import Groq
     GROQ_AVAILABLE = True
 except ImportError:
     GROQ_AVAILABLE = False
-
-# Gemini AI - Try new then old
-try:
-    from google.genai import Client as GoogleGenaiClient
-    GEMINI_AVAILABLE = True
-    USING_NEW_GEMINI = True
-except ImportError:
-    try:
-        import google.generativeai as genai
-        GEMINI_AVAILABLE = True
-        USING_NEW_GEMINI = False
-    except ImportError:
-        GEMINI_AVAILABLE = False
-        USING_NEW_GEMINI = False
+    print("⚠️ Groq not installed")
 
 # Database
 try:
@@ -72,6 +60,7 @@ try:
     SQLALCHEMY_AVAILABLE = True
 except ImportError:
     SQLALCHEMY_AVAILABLE = False
+    print("⚠️ Flask-SQLAlchemy not installed")
 
 load_dotenv()
 
@@ -82,10 +71,12 @@ EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', 'your-app-password')
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
 
+# ==================== FLASK APP INITIALIZATION ====================
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(32))
 app.permanent_session_lifetime = timedelta(hours=24)
 
+# File upload configuration
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'txt', 'doc', 'docx', 'csv'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -175,7 +166,7 @@ if db and SQLALCHEMY_AVAILABLE:
             db.create_all()
             print("✅ Database tables created/verified")
         except Exception as e:
-            print(f"⚠️ Table creation error: {e}")
+            print(f"⚠️ Error creating tables: {e}")
 
 # ==================== JSON FALLBACK PATHS ====================
 
@@ -192,14 +183,17 @@ def init_json_databases():
     if not os.path.exists(USERS_FILE):
         with open(USERS_FILE, 'w') as f:
             json.dump({}, f, indent=2)
+        print(f"✅ Created {USERS_FILE}")
     
     if not os.path.exists(PREDICTIONS_FILE):
         with open(PREDICTIONS_FILE, 'w') as f:
             json.dump({}, f, indent=2)
+        print(f"✅ Created {PREDICTIONS_FILE}")
     
     if not os.path.exists(REVIEWS_FILE):
         with open(REVIEWS_FILE, 'w') as f:
             json.dump([], f, indent=2)
+        print(f"✅ Created {REVIEWS_FILE}")
 
 if CORS_AVAILABLE:
     CORS(app)
@@ -275,7 +269,7 @@ def send_email_with_report(user_email, user_name, pdf_buffer):
         print(f"❌ Email error: {e}")
         return False
 
-# ==================== AI CONFIGURATION ====================
+# ==================== AI CONFIGURATION - GROQ ONLY ====================
 
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 GROQ_READY = False
@@ -284,55 +278,21 @@ groq_client = None
 if GROQ_AVAILABLE and GROQ_API_KEY:
     try:
         groq_client = Groq(api_key=GROQ_API_KEY)
+        
         test_response = groq_client.chat.completions.create(
             messages=[{"role": "user", "content": "Hi"}],
             model="llama-3.3-70b-versatile",
             max_tokens=10
         )
         GROQ_READY = True
-        print(f"✅ Groq AI configured (PRIMARY)")
+        print(f"✅ Groq AI configured (PRIMARY - ONLY AI SYSTEM)")
     except Exception as e:
         print(f"❌ Groq configuration error: {e}")
         GROQ_READY = False
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-GEMINI_READY = False
-gemini_model = None
-
-if GEMINI_AVAILABLE and GEMINI_API_KEY:
-    try:
-        if USING_NEW_GEMINI:
-            gemini_client = GoogleGenaiClient(api_key=GEMINI_API_KEY)
-            GEMINI_READY = True
-            print(f"✅ Gemini AI configured (BACKUP) - Using new google-genai")
-        else:
-            genai.configure(api_key=GEMINI_API_KEY)
-            model_names = [
-                'models/gemini-2.0-flash-exp',
-                'models/gemini-exp-1206',
-                'models/gemini-flash-latest',
-                'models/gemini-2.0-flash',
-                'models/gemini-1.5-flash',
-                'gemini-pro'
-            ]
-            
-            for model_name in model_names:
-                try:
-                    gemini_model = genai.GenerativeModel(model_name)
-                    test_response = gemini_model.generate_content("Hi")
-                    GEMINI_READY = True
-                    print(f"✅ Gemini AI configured (BACKUP) - {model_name}")
-                    break
-                except:
-                    continue
-    except Exception as e:
-        print(f"❌ Gemini configuration error: {e}")
-        GEMINI_READY = False
-
 AI_STATUS = {
     'groq': GROQ_READY,
-    'gemini': GEMINI_READY,
-    'primary': 'groq' if GROQ_READY else ('gemini' if GEMINI_READY else 'fallback')
+    'primary': 'groq' if GROQ_READY else 'fallback'
 }
 
 # Load ML model
@@ -735,10 +695,10 @@ def extract_text_from_file(file_path, file_ext):
         print(f"❌ Text extraction error: {e}")
         return None
 
-# ==================== AI EXTRACTION FUNCTIONS ====================
+# ==================== AI EXTRACTION FUNCTIONS - GROQ ONLY ====================
 
 def extract_with_groq(prompt):
-    """Try extraction with Groq (PRIMARY)"""
+    """Extract data with Groq (PRIMARY - ONLY AI)"""
     if not GROQ_READY:
         return None, "Groq not available"
     
@@ -758,25 +718,11 @@ def extract_with_groq(prompt):
         print(f"❌ Groq extraction failed: {error_msg[:200]}")
         return None, error_msg
 
-def extract_with_gemini(prompt):
-    """Try extraction with Gemini (BACKUP)"""
-    if not GEMINI_READY:
-        return None, "Gemini not available"
-    
-    try:
-        if gemini_model:
-            response = gemini_model.generate_content(prompt)
-            return response.text.strip(), None
-    except Exception as e:
-        error_msg = str(e)
-        print(f"❌ Gemini extraction failed: {error_msg[:200]}")
-        return None, error_msg
-
 def extract_data_with_ai(text_content):
-    """Triple-layer AI extraction: Groq → Gemini → Rule-based"""
+    """Dual-layer AI extraction: Groq → Rule-based"""
     print("\n" + "="*60)
-    print("🤖 STARTING AI EXTRACTION WITH TRIPLE-LAYER FALLBACK")
-    print("   NEW ORDER: Groq → Gemini → Rule-based")
+    print("🤖 STARTING AI EXTRACTION")
+    print("   Groq → Rule-based fallback")
     print("="*60)
     
     prompt = f"""Extract energy prediction parameters from this text and return ONLY valid JSON.
@@ -809,26 +755,19 @@ TEXT:
 JSON:"""
 
     # Layer 1: Try Groq (PRIMARY)
-    print("🟦 Layer 1: Trying Groq AI (Primary)...")
+    print("🟦 Layer 1: Trying Groq AI...")
     response_text, error = extract_with_groq(prompt)
     ai_used = 'groq'
     
-    # Layer 2: Try Gemini if Groq failed (BACKUP)
+    # Layer 2: Rule-based fallback
     if response_text is None:
         print(f"⚠️  Groq failed: {error[:100]}")
-        print("🔷 Layer 2: Trying Gemini AI (Backup)...")
-        response_text, error = extract_with_gemini(prompt)
-        ai_used = 'gemini'
-    
-    # Layer 3: Rule-based fallback
-    if response_text is None:
-        print(f"⚠️  Gemini failed: {error[:100]}")
-        print("🔶 Layer 3: Using rule-based fallback...")
+        print("🔶 Layer 2: Using rule-based fallback...")
         return rule_based_extraction(text_content), 'fallback'
     
     # Parse and validate AI response
     try:
-        print(f"✅ {ai_used.upper()} responded, parsing JSON...")
+        print(f"✅ Groq responded, parsing JSON...")
         
         response_text = response_text.replace('```json', '').replace('```', '').strip()
         data = json.loads(response_text)
@@ -853,7 +792,7 @@ JSON:"""
             print(f"❌ Missing fields: {missing}")
             return rule_based_extraction(text_content), 'fallback'
         
-        print(f"✅ Extraction successful via {ai_used.upper()}")
+        print(f"✅ Extraction successful via Groq")
         print("="*60 + "\n")
         return data, ai_used
         
@@ -934,19 +873,6 @@ def chat_with_groq(message, system_context):
     except Exception as e:
         return None, str(e)
 
-def chat_with_gemini(message, system_context):
-    """Chat with Gemini (BACKUP)"""
-    if not GEMINI_READY:
-        return None, "Gemini not available"
-    
-    try:
-        if gemini_model:
-            full_prompt = f"{system_context}\n\nUser message: {message}\n\nYour response:"
-            response = gemini_model.generate_content(full_prompt)
-            return response.text, None
-    except Exception as e:
-        return None, str(e)
-
 def get_fallback_chat_response(message):
     """Enhanced rule-based fallback chat"""
     message_lower = message.lower().strip()
@@ -964,7 +890,7 @@ What would you like to do today?"""
 
 🎯 **What it does:**
 - Predicts your energy usage based on 8 parameters
-- Uses Machine Learning and AI
+- Uses Machine Learning and AI (Groq)
 - Analyzes temperature, humidity, occupancy, and more
 - Provides personalized energy-saving recommendations
 
@@ -1020,8 +946,7 @@ I'm here to help you optimize your energy usage anytime!
 What's next?
 - Try another prediction?
 - Explore the Dashboard?
-- Learn energy-saving tips?
-- View your energy history?"""
+- Learn energy-saving tips?"""
     
     elif any(word in message_lower for word in ['tips', 'save energy', 'reduce', 'lower', 'optimize']):
         return """💡 **Energy-Saving Tips:**
@@ -1048,9 +973,8 @@ What's next?
 - Install solar panels
 - Use solar water heaters
 - Consider battery storage
-- Get government incentives
 
-Want a personalized prediction to see YOUR savings?"""
+Want a personalized prediction?"""
     
     else:
         return """I'm your Smart Energy AI Assistant! 🤖
@@ -1339,11 +1263,10 @@ def extract_from_file():
         if not extracted_data:
             return jsonify({'success': False, 'error': 'Could not extract energy parameters from file.'}), 400
         
-        # Use timestamp from extraction if available
-        if 'DateTime' in extracted_data and extracted_data['DateTime']:
-            extracted_data['timestamp'] = extracted_data['DateTime']
-        else:
+        if 'DateTime' not in extracted_data or not extracted_data['DateTime']:
             extracted_data['timestamp'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
+        else:
+            extracted_data['timestamp'] = extracted_data['DateTime']
         
         # Auto-generate prediction
         try:
@@ -1557,7 +1480,7 @@ def predict():
 @app.route('/api/chatbot', methods=['POST'])
 @login_required
 def chatbot():
-    """Triple-layer chatbot: Groq → Gemini → Rule-based"""
+    """Chatbot with Groq - PRIMARY"""
     try:
         message = request.json.get('message', '').strip()
         print(f"\n💬 Chatbot message: {message}")
@@ -1571,39 +1494,30 @@ YOUR ROLE AND CAPABILITIES:
    - AI Chat: Conversational predictions (where we are now)
    - Dashboard: Visual analytics and charts
    - Reviews: User feedback section
-   - About: Information about the technology
 
 2. WEBSITE PURPOSE - Explain what this does:
    - Uses Machine Learning to predict energy consumption
    - Analyzes: Temperature, Humidity, Occupancy, HVAC/Lighting usage, Square footage, Renewable energy, Holiday status
    - Provides: Predictions in kWh, Usage level, Efficiency score, Personalized recommendations
-   - Visualizes: Energy patterns, device breakdown, trends
 
 3. ENERGY PREDICTIONS - Guide users through predictions:
-   - When users want predictions, ask step-by-step for the 8 parameters
-   - Be encouraging and helpful throughout the process
+   - When users want predictions, ask for the 8 parameters step-by-step
+   - Be encouraging and helpful
 
 RESPONSE STYLE:
 - Keep responses to 2-3 sentences unless explaining features
 - Be conversational and helpful
-- Focus on energy, sustainability, and this platform"""
+- Focus on energy and sustainability"""
 
-        # Layer 1: Try Groq (PRIMARY)
-        print("🟦 Layer 1: Trying Groq (Primary)...")
+        # Try Groq (PRIMARY)
+        print("🟦 Trying Groq AI...")
         response_text, error = chat_with_groq(message, system_context)
         ai_used = 'groq'
         
-        # Layer 2: Try Gemini if Groq failed (BACKUP)
+        # Fallback if Groq fails
         if response_text is None:
             print(f"⚠️  Groq failed: {error[:100]}")
-            print("🔷 Layer 2: Trying Gemini (Backup)...")
-            response_text, error = chat_with_gemini(message, system_context)
-            ai_used = 'gemini'
-        
-        # Layer 3: Rule-based fallback
-        if response_text is None:
-            print(f"⚠️  Gemini failed: {error[:100]}")
-            print("🔶 Layer 3: Using rule-based fallback...")
+            print("🔶 Using rule-based fallback...")
             response_text = get_fallback_chat_response(message)
             ai_used = 'fallback'
         
@@ -1676,7 +1590,7 @@ def get_charts_data():
 @app.route('/api/system-status', methods=['GET'])
 @login_required
 def system_status():
-    """Return current AI system status"""
+    """Return current system status"""
     return jsonify({
         'success': True,
         'database': {
@@ -1685,8 +1599,7 @@ def system_status():
         },
         'ai_status': {
             'groq': {'available': GROQ_READY, 'priority': 1},
-            'gemini': {'available': GEMINI_READY, 'priority': 2},
-            'fallback': {'available': True, 'priority': 3},
+            'fallback': {'available': True, 'priority': 2},
             'primary_system': AI_STATUS['primary']
         },
         'ml_model': {'loaded': model is not None},
@@ -1695,8 +1608,6 @@ def system_status():
             'docx': DOCX_AVAILABLE
         }
     })
-
-# ==================== USER PROFILE API ====================
 
 @app.route('/api/user-profile', methods=['GET'])
 @login_required
@@ -1840,19 +1751,15 @@ if __name__ == '__main__':
         print("📊 Database: JSON Fallback ⚠️")
     
     print(f"✅ ML Model: {'Loaded' if model else 'Using Fallback'}")
-    print(f"\n🤖 AI SYSTEMS (NEW ORDER):")
+    print(f"\n🤖 AI SYSTEM:")
     print(f"   {'✅' if GROQ_READY else '❌'} Groq AI (Primary): {'READY' if GROQ_READY else 'NOT AVAILABLE'}")
-    print(f"   {'✅' if GEMINI_READY else '❌'} Gemini AI (Backup): {'READY' if GEMINI_READY else 'NOT AVAILABLE'}")
     print(f"   ✅ Rule-based Fallback: READY")
     print(f"\n📊 ACTIVE SYSTEM: {AI_STATUS['primary'].upper()}")
     
-    if not (GROQ_READY or GEMINI_READY):
-        print(f"\n⚠️  WARNING: No AI systems available!")
-        print(f"   To enable AI features:")
-        print(f"   1. For Groq (Primary): pip install groq")
-        print(f"      Add GROQ_API_KEY to .env")
-        print(f"   2. For Gemini (Backup): pip install google-genai")
-        print(f"      Add GEMINI_API_KEY to .env")
+    if not GROQ_READY:
+        print(f"\n⚠️  WARNING: Groq AI not available!")
+        print(f"   To enable: pip install groq")
+        print(f"   Add GROQ_API_KEY to .env")
     
     print(f"\n📁 FILE PROCESSING:")
     print(f"   {'✅' if PDF_AVAILABLE else '❌'} PDF Support")
