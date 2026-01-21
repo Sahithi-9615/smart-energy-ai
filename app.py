@@ -436,22 +436,50 @@ def save_prediction(user_email, prediction_data):
             print(f"❌ Error saving prediction to JSON: {e}")
             return False
 
-from datetime import datetime
 import pytz
 
 def convert_utc_to_ist(utc_time_str):
-    """Convert UTC ISO string to IST"""
+    """Convert UTC ISO string to IST - handles both ISO and pre-formatted dates"""
+    if not utc_time_str:
+        return utc_time_str
+    
     try:
-        # Parse the UTC timestamp
-        utc_time = datetime.fromisoformat(utc_time_str.replace('Z', '+00:00'))
+        utc_time_str = str(utc_time_str).strip()
+        
+        # Check if it's already formatted (contains spaces but no timezone info)
+        # Pattern: "2026-01-21 10:30:45"
+        if ' ' in utc_time_str and 'T' not in utc_time_str and '+' not in utc_time_str and 'Z' not in utc_time_str:
+            # Already formatted correctly - just return it
+            return utc_time_str
+        
+        # Parse ISO format UTC timestamp
+        if 'Z' in utc_time_str:
+            utc_time = datetime.fromisoformat(utc_time_str.replace('Z', '+00:00'))
+        elif 'T' in utc_time_str:
+            # ISO format with or without timezone
+            if '+' in utc_time_str or utc_time_str.endswith('Z'):
+                utc_time = datetime.fromisoformat(utc_time_str.replace('Z', '+00:00'))
+            else:
+                # No timezone info, assume UTC
+                utc_time = datetime.fromisoformat(utc_time_str)
+                utc_time = utc_time.replace(tzinfo=pytz.utc)
+        else:
+            # Not a recognized timestamp format, return as-is
+            return utc_time_str
+        
+        # Ensure it has timezone info (UTC)
+        if utc_time.tzinfo is None:
+            utc_time = utc_time.replace(tzinfo=pytz.utc)
         
         # Convert to IST
         ist = pytz.timezone('Asia/Kolkata')
-        ist_time = utc_time.replace(tzinfo=pytz.utc).astimezone(ist)
+        ist_time = utc_time.astimezone(ist)
         
         # Return formatted string
         return ist_time.strftime('%Y-%m-%d %H:%M:%S')
-    except:
+    except Exception as e:
+        print(f"⚠️ Date conversion error for '{utc_time_str}': {e}")
+        # If conversion fails, return original string
         return utc_time_str
 
 # Then modify your get_user_predictions function (around line 405):
@@ -474,7 +502,7 @@ def get_user_predictions(user_email):
                     'temperature': p.get('temperature'),
                     'occupancy': p.get('occupancy'),
                     'hvac': p.get('hvac'),
-                    'date': convert_utc_to_ist(p['date'])  # ← AND HERE
+                    'date': convert_utc_to_ist(p.get('date', ''))  # ← CONVERT HERE - NOW FIXED FOR ALL USERS
                 }
                 for p in predictions
             ]
@@ -482,7 +510,7 @@ def get_user_predictions(user_email):
             print(f"❌ Error getting predictions: {e}")
             return []
     else:
-        # JSON fallback
+        # JSON fallback - dates are already in correct format
         history = load_predictions_history()
         return history.get(user_email, [])
 
