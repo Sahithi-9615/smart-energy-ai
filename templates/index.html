@@ -2437,16 +2437,15 @@ async function makePredictionFromParams(params) {
     resetAccumulatedParams();
     resetChatState();
     
-    // Auto-refresh user profile stats
-    setTimeout(() => {
-        loadUserProfile();
-        
-        // If dashboard is open, refresh it too
-        const dashboardTab = document.getElementById('dashboard');
-        if (dashboardTab && dashboardTab.classList.contains('active')) {
-            loadDashboardData();
-        }
-    }, 500);
+    // ✅ Auto-refresh user profile stats IMMEDIATELY
+    console.log('✅ Chat prediction successful - refreshing profile');
+    loadUserProfile();  // Call immediately!
+    
+    // If dashboard is open, refresh it too
+    const dashboardTab = document.getElementById('dashboard');
+    if (dashboardTab && dashboardTab.classList.contains('active')) {
+        loadDashboardData();
+    }
 } else {
             throw new Error(result.error || 'Prediction failed');
         }
@@ -2652,17 +2651,16 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
                 if (result.success) {
     displayResults(result);
     
-    // Auto-refresh user profile stats
-    setTimeout(() => {
-        loadUserProfile();
-        
-        // If dashboard is open, refresh it too
-        const dashboardTab = document.getElementById('dashboard');
-        if (dashboardTab && dashboardTab.classList.contains('active')) {
-            loadDashboardData();
-        }
-    }, 500);
-} else {
+    // Auto-refresh user profile stats IMMEDIATELY
+    console.log('✅ Prediction successful - refreshing profile');
+    loadUserProfile();  // Refresh profile immediately
+    
+    // If dashboard is open, refresh it too
+    const dashboardTab = document.getElementById('dashboard');
+    if (dashboardTab && dashboardTab.classList.contains('active')) {
+        loadDashboardData();
+    }
+}else {
     resultsCard.innerHTML = `<div class="error-message">Error: ${result.error || 'Unknown error occurred'}</div>`;
 }
             } catch (error) {
@@ -2790,6 +2788,16 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
                     
                     if (result.prediction) {
                         displayResults(result.prediction);
+                        
+                        // ✅ NEW: Auto-refresh profile after file upload prediction
+                        console.log('✅ File upload prediction successful - refreshing profile');
+                        loadUserProfile();
+                        
+                        // If dashboard is open, refresh it too
+                        const dashboardTab = document.getElementById('dashboard');
+                        if (dashboardTab && dashboardTab.classList.contains('active')) {
+                            loadDashboardData();
+                        }
                     } else {
                         resultsCard.innerHTML = `
                             <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;"></i>
