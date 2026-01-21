@@ -436,6 +436,25 @@ def save_prediction(user_email, prediction_data):
             print(f"❌ Error saving prediction to JSON: {e}")
             return False
 
+from datetime import datetime
+import pytz
+
+def convert_utc_to_ist(utc_time_str):
+    """Convert UTC ISO string to IST"""
+    try:
+        # Parse the UTC timestamp
+        utc_time = datetime.fromisoformat(utc_time_str.replace('Z', '+00:00'))
+        
+        # Convert to IST
+        ist = pytz.timezone('Asia/Kolkata')
+        ist_time = utc_time.replace(tzinfo=pytz.utc).astimezone(ist)
+        
+        # Return formatted string
+        return ist_time.strftime('%Y-%m-%d %H:%M:%S')
+    except:
+        return utc_time_str
+
+# Then modify your get_user_predictions function (around line 405):
 def get_user_predictions(user_email):
     """Get predictions for a specific user"""
     user_email = user_email.lower().strip()
@@ -448,14 +467,14 @@ def get_user_predictions(user_email):
             
             return [
                 {
-                    'timestamp': p.get('timestamp', ''),
+                    'timestamp': convert_utc_to_ist(p.get('timestamp', '')),  # ← CONVERT HERE
                     'prediction': p['prediction'],
                     'usage_level': p['usage_level'],
                     'efficiency_score': p['efficiency_score'],
                     'temperature': p.get('temperature'),
                     'occupancy': p.get('occupancy'),
                     'hvac': p.get('hvac'),
-                    'date': p['date']
+                    'date': convert_utc_to_ist(p['date'])  # ← AND HERE
                 }
                 for p in predictions
             ]
