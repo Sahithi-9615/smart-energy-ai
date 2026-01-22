@@ -15,5 +15,5 @@ python-decouple
 requests==2.31.0
 pymongo>=4.6.0
 dnspython>=2.4.0
-sendgrid
-pyjwt
+sendgrid>=6.11.0
+pyjwt>=2.8.0
