@@ -18,6 +18,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from auth import create_token, jwt_required
+from email_service import send_report
 
 
 # Try to import CORS
@@ -1767,6 +1768,17 @@ def get_dashboard_stats():
     except Exception as e:
         print(f"Dashboard stats error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route("/api/email-report", methods=["POST"])
+def email_report():
+    user, error, status = jwt_required()
+    if error:
+        return error, status
+
+    pdf_path = generate_pdf_for_user(user["user_id"])
+    send_report(user["email"], pdf_path)
+
+    return jsonify(success=True, message="Email sent")
 
 # ==================== APP STARTUP ====================
 
