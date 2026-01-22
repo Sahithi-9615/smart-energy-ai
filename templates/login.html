@@ -258,9 +258,17 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccess('Login successful! Redirecting...');
-                    setTimeout(() => window.location.href = '/', 1000);
-                } else {
+    // 🔐 SAVE JWT TOKEN
+    localStorage.setItem("auth_token", result.token);
+
+    // optional: save user info (nice to have)
+    localStorage.setItem("user_email", result.email || email);
+    localStorage.setItem("user_name", result.name || "");
+
+    showSuccess('Login successful! Redirecting...');
+    setTimeout(() => window.location.href = '/', 1000);
+}
+ else {
                     showError(result.message || 'Invalid email or password');
                 }
             } catch (error) {
