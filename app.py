@@ -1223,52 +1223,6 @@ def download_report():
         print(f"Download report error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/email-report', methods=['POST'])
-@login_required
-def email_report():
-    """Generate PDF report and email to user"""
-    try:
-        # Check email configuration first
-        if not EMAIL_SENDER or EMAIL_SENDER == 'your-email@gmail.com':
-            return jsonify({
-                'success': False, 
-                'error': 'Email not configured. Please contact administrator to set up EMAIL_SENDER and EMAIL_PASSWORD in environment variables.'
-            }), 500
-        
-        if not EMAIL_PASSWORD or EMAIL_PASSWORD == 'your-app-password':
-            return jsonify({
-                'success': False,
-                'error': 'Email password not configured. Please contact administrator.'
-            }), 500
-        
-        user_email = session.get('user_id')
-        users = load_users()
-        user_name = users.get(user_email, {}).get('name', 'User')
-        
-        pdf_buffer = generate_pdf_report(user_email)
-        
-        if not pdf_buffer:
-            return jsonify({'success': False, 'error': 'No predictions available. Make some predictions first!'}), 400
-        
-        success = send_email_with_report(user_email, user_name, pdf_buffer)
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'message': f'Report sent successfully to {user_email}'
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Failed to send email. Please verify your email address or contact support.'
-            }), 500
-    
-    except Exception as e:
-        print(f"Email report error: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'success': False, 'error': f'Email error: {str(e)}'}), 500
-
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
