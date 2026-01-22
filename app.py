@@ -17,6 +17,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
+from auth import create_token, jwt_required
+
 
 # Try to import CORS
 try:
@@ -1266,30 +1268,23 @@ def email_report():
         traceback.print_exc()
         return jsonify({'success': False, 'error': f'Email error: {str(e)}'}), 500
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["POST"])
 def login():
-    if 'user_id' in session:
-        return redirect(url_for('home'))
-    
-    if request.method == 'POST':
-        data = request.json
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
-        
-        if not email or not password:
-            return jsonify({'success': False, 'message': 'Email and password required'}), 400
-        
-        success, user_name = login_user(email, password)
-        
-        if success:
-            session.permanent = True
-            session['user_id'] = email
-            session['username'] = user_name
-            return jsonify({'success': True, 'message': 'Login successful'})
-        else:
-            return jsonify({'success': False, 'message': user_name}), 401
-    
-    return render_template('login.html')
+    data = request.json
+    user = users.find_one({"email": data["email"]})
+
+    if not user:
+        return jsonify(success=False, error="Invalid credentials"), 401
+
+    token = create_token(str(user["_id"]), user["email"])
+
+    return jsonify(
+        success=True,
+        token=token,
+        name=user["name"],
+        email=user["email"]
+    )
+
 
 @app.route('/signup', methods=['POST'])
 def signup():
