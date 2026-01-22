@@ -1,10 +1,16 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file
+from flask import Flask, render_template, request, jsonify, send_file
 import os
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from functools import wraps
 import secrets
+from io import BytesIO
+from datetime import datetime, timedelta
+
+# Import our new modules
+from auth import create_token, jwt_required, get_current_user
+from email_service import send_report, send_simple_email
+from functools import wraps
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.lib.units import inch
@@ -12,13 +18,6 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from io import BytesIO
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
-from auth import create_token, jwt_required
-from email_service import send_report
 
 
 # Try to import CORS
@@ -1202,12 +1201,12 @@ def escapeHtml(text):
 # ==================== ROUTES ====================
 
 @app.route('/api/download-report', methods=['GET'])
-@login_required
+@jwt_required
 def download_report():
-    """Generate and download PDF report"""
+    """Generate and download PDF report (JWT protected)"""
     try:
-        user_email = session.get('user_id')
-        pdf_buffer = generate_pdf_report(user_email)
+        user = get_current_user()
+        pdf_buffer = generate_pdf_report(user['email'])
         
         if not pdf_buffer:
             return jsonify({'success': False, 'error': 'No predictions available'}), 400
@@ -1218,63 +1217,96 @@ def download_report():
             as_attachment=True,
             download_name=f'energy_report_{datetime.now().strftime("%Y%m%d")}.pdf'
         )
-    
+        
     except Exception as e:
         print(f"Download report error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route("/login", methods=["POST"])
+@app.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    user = users.find_one({"email": data["email"]})
-
-    if not user:
-        return jsonify(success=False, error="Invalid credentials"), 401
-
-    token = create_token(str(user["_id"]), user["email"])
-
-    return jsonify(
-        success=True,
-        token=token,
-        name=user["name"],
-        email=user["email"]
-    )
+    """JWT-based login"""
+    try:
+        data = request.json
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not email or not password:
+            return jsonify({'success': False, 'message': 'Email and password required'}), 400
+        
+        # Verify user credentials
+        success, result = login_user(email, password)
+        
+        if not success:
+            return jsonify({'success': False, 'message': result}), 401
+        
+        # result is the user's name
+        user_name = result
+        
+        # Create JWT token
+        token = create_token(email, email)  # Using email as user_id
+        
+        return jsonify({
+            'success': True,
+            'token': token,
+            'name': user_name,
+            'email': email,
+            'message': 'Login successful'
+        })
+        
+    except Exception as e:
+        print(f"Login error: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @app.route('/signup', methods=['POST'])
 def signup():
-    data = request.json
-    name = data.get('name', '').strip()
-    email = data.get('email', '').strip().lower()
-    password = data.get('password', '')
-    
-    if not all([name, email, password]):
-        return jsonify({'success': False, 'message': 'All fields required'}), 400
-    
-    if len(password) < 6:
-        return jsonify({'success': False, 'message': 'Password must be 6+ characters'}), 400
-    
-    success, message = register_user(email, name, password)
-    
-    if success:
-        return jsonify({'success': True, 'message': message})
-    else:
-        return jsonify({'success': False, 'message': message}), 400
+    """User registration"""
+    try:
+        data = request.json
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not all([name, email, password]):
+            return jsonify({'success': False, 'message': 'All fields required'}), 400
+        
+        if len(password) < 6:
+            return jsonify({'success': False, 'message': 'Password must be 6+ characters'}), 400
+        
+        success, message = register_user(email, name, password)
+        
+        if success:
+            return jsonify({'success': True, 'message': message})
+        else:
+            return jsonify({'success': False, 'message': message}), 400
+            
+    except Exception as e:
+        print(f"Signup error: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/logout')
+
+@app.route('/logout', methods=['POST'])
+@jwt_required
 def logout():
-    session.clear()
-    return redirect(url_for('login'))
+    """Logout (client-side token deletion)"""
+    return jsonify({'success': True, 'message': 'Logged out successfully'})
+
 
 @app.route('/')
-@login_required
 def home():
-    return render_template('index.html', username=session.get('username', 'User'))
+    """Serve the main page (no session check, handled client-side)"""
+    return render_template('index.html', username='User')
+
+
+@app.route('/login-page')
+def login_page():
+    """Serve the login page"""
+    return render_template('login.html')
 
 # ==================== FILE UPLOAD ====================
 
 @app.route('/api/extract-from-file', methods=['POST'])
-@login_required
+@jwt_required
 def extract_from_file():
     print("\n" + "="*60)
     print("📁 FILE UPLOAD REQUEST RECEIVED")
@@ -1388,13 +1420,14 @@ def extract_from_file():
 # ==================== API ENDPOINTS ====================
 
 @app.route('/api/predict', methods=['POST'])
-@login_required
+@jwt_required
 def predict():
     print("\n" + "="*60)
     print("⚡ MANUAL PREDICTION REQUEST")
     print("="*60)
     
     try:
+        user = get_current_user()
         data = request.json
         print(f"📊 Input data: Temp={data['Temperature']}, Humidity={data['Humidity']}, Occupancy={data['Occupancy']}")
         
@@ -1438,7 +1471,7 @@ def predict():
         print(f"📤 Response: {response}")
         print("="*60 + "\n")
         
-        save_prediction(session.get('user_id'), {
+        save_prediction(user['email'], {
             'prediction': response['prediction'],
             'usage_level': response['usage_level'],
             'efficiency_score': response['efficiency_score'],
@@ -1450,15 +1483,12 @@ def predict():
         return jsonify(response)
     
     except Exception as e:
-        print(f"❌ Prediction error: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/chatbot', methods=['POST'])
-@login_required
+@jwt_required
 def chatbot():
-    """Triple-layer chatbot: Groq → Gemini → Rule-based"""
+    """AI chatbot endpoint (JWT protected)"""
     try:
         message = request.json.get('message', '').strip()
         print(f"\n💬 Chatbot message: {message}")
@@ -1507,20 +1537,13 @@ RESPONSE STYLE:
             ai_used = 'fallback'
         
         print(f"✅ Response generated via {ai_used.upper()}")
-        return jsonify({
-            'response': response_text,
-            'powered_by': ai_used
-        })
-    
+        return jsonify({'response': response_text, 'powered_by': ai_used})
+        
     except Exception as e:
-        print(f"❌ Chatbot error: {e}")
-        return jsonify({
-            'response': "I'm here to help with energy predictions! What would you like to know?",
-            'powered_by': 'error_fallback'
-        }), 200
+        return jsonify({'response': 'Error processing request', 'powered_by': 'error'}), 500
 
 @app.route('/api/submit-review', methods=['POST'])
-@login_required
+@jwt_required
 def submit_review():
     try:
         data = request.get_json()
@@ -1542,7 +1565,7 @@ def submit_review():
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/get-reviews', methods=['GET'])
-@login_required
+@jwt_required
 def get_reviews():
     try:
         reviews = load_reviews()
@@ -1551,7 +1574,7 @@ def get_reviews():
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/charts-data', methods=['GET'])
-@login_required
+@jwt_required
 def get_charts_data():
     return jsonify({
         'energy_trend': {
@@ -1573,7 +1596,7 @@ def get_charts_data():
     })
 
 @app.route('/api/system-status', methods=['GET'])
-@login_required
+@jwt_required
 def system_status():
     """Return current system status"""
     return jsonify({
@@ -1598,17 +1621,17 @@ def system_status():
 # ==================== USER PROFILE API ====================
 
 @app.route('/api/user-profile', methods=['GET'])
-@login_required
+@jwt_required
 def get_user_profile():
-    """Get current user's profile information"""
+    """Get user profile (JWT protected)"""
     try:
-        user_email = session.get('user_id')
+        user = get_current_user()
         users = load_users()
         
-        if user_email in users:
-            user_data = users[user_email]
+        if user['email'] in users:
+            user_data = users[user['email']]
             history = load_predictions_history()
-            user_predictions = history.get(user_email, [])
+            user_predictions = history.get(user['email'], [])
             
             total_predictions = len(user_predictions)
             avg_consumption = 0
@@ -1621,7 +1644,7 @@ def get_user_profile():
             profile = {
                 'success': True,
                 'name': user_data['name'],
-                'email': user_email,
+                'email': user['email'],
                 'member_since': user_data.get('created_at', 'N/A'),
                 'total_predictions': total_predictions,
                 'avg_consumption': round(avg_consumption, 2),
@@ -1631,12 +1654,12 @@ def get_user_profile():
             return jsonify(profile)
         else:
             return jsonify({'success': False, 'error': 'User not found'}), 404
-    
+            
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/prediction-history', methods=['GET'])
-@login_required
+@jwt_required
 def get_prediction_history():
     """Get user's prediction history"""
     try:
@@ -1652,11 +1675,11 @@ def get_prediction_history():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/dashboard-stats', methods=['GET'])
-@login_required
+@jwt_required
 def get_dashboard_stats():
-    """Get comprehensive dashboard statistics"""
+    """Get dashboard statistics (JWT protected)"""
     try:
-        user_email = session.get('user_id')
+        user = get_current_user()
         history = load_predictions_history()
         user_predictions = history.get(user_email, [])
         
@@ -1718,21 +1741,46 @@ def get_dashboard_stats():
         }
         
         return jsonify(stats)
-    
+        
     except Exception as e:
-        print(f"Dashboard stats error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route("/api/email-report", methods=["POST"])
+@app.route('/api/email-report', methods=['POST'])
+@jwt_required
 def email_report():
-    user, error, status = jwt_required()
-    if error:
-        return error, status
-
-    pdf_path = generate_pdf_for_user(user["user_id"])
-    send_report(user["email"], pdf_path)
-
-    return jsonify(success=True, message="Email sent")
+    """Email PDF report to user (JWT protected)"""
+    try:
+        user = get_current_user()
+        
+        # Generate PDF
+        pdf_buffer = generate_pdf_report(user['email'])
+        
+        if not pdf_buffer:
+            return jsonify({'success': False, 'error': 'No predictions available'}), 400
+        
+        # Save PDF temporarily
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+            tmp_file.write(pdf_buffer.getvalue())
+            tmp_path = tmp_file.name
+        
+        # Send email using SendGrid
+        success = send_report(user['email'], tmp_path)
+        
+        # Clean up temp file
+        try:
+            os.remove(tmp_path)
+        except:
+            pass
+        
+        if success:
+            return jsonify({'success': True, 'message': 'Report sent to your email'})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to send email'}), 500
+            
+    except Exception as e:
+        print(f"Email report error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ==================== APP STARTUP ====================
 
