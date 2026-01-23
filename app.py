@@ -1394,7 +1394,8 @@ def extract_from_file():
             prediction_result = None
         
         if prediction_result:
-            save_prediction(session.get('user_id'), {
+            user = get_current_user()
+            save_prediction(user['email'], {
                 'prediction': prediction_result['prediction'],
                 'usage_level': prediction_result['usage_level'],
                 'efficiency_score': prediction_result['efficiency_score'],
@@ -1547,7 +1548,8 @@ RESPONSE STYLE:
 def submit_review():
     try:
         data = request.get_json()
-        user_email = session.get('user_id')
+        user = get_current_user()
+        user_email = user['email']
         
         success = add_review(
             user_email=user_email,
@@ -1663,7 +1665,8 @@ def get_user_profile():
 def get_prediction_history():
     """Get user's prediction history"""
     try:
-        user_email = session.get('user_id')
+        user = get_current_user()
+        user_email = user['email']
         user_predictions = get_user_predictions(user_email)
         
         return jsonify({
@@ -1681,7 +1684,7 @@ def get_dashboard_stats():
     try:
         user = get_current_user()
         history = load_predictions_history()
-        user_predictions = history.get(user_email, [])
+        user_predictions = history.get(user['email'], [])
         
         if not user_predictions:
             return jsonify({
