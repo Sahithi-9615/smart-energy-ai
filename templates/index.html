@@ -3424,7 +3424,10 @@ if (data.stats.total_predictions > 0) {
 function updateConsumptionChart(trendData) {
     const ctx = document.getElementById('consumptionTrendChart');
     
-    if (!ctx) return;
+    if (!ctx || !ctx.getContext) {
+        console.warn('Chart canvas not ready yet');
+        return;
+    }
     
     if (!trendData || trendData.length === 0) {
         return;
