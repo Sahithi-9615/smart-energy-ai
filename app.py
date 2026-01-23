@@ -1785,6 +1785,22 @@ def email_report():
         print(f"Email report error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/test-email', methods=['GET'])
+def test_email():
+    """Test SendGrid email"""
+    from email_service import send_simple_email
+    
+    success = send_simple_email(
+        recipient_email='your-email@gmail.com',  # Your actual email
+        subject='Test Email from Smart Energy AI',
+        html_content='<p>This is a test email. If you receive this, SendGrid is working!</p>'
+    )
+    
+    if success:
+        return jsonify({'success': True, 'message': 'Email sent successfully!'})
+    else:
+        return jsonify({'success': False, 'message': 'Email failed to send'}), 500
+
 # ==================== APP STARTUP ====================
 
 if __name__ == '__main__':
