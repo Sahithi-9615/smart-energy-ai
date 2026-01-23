@@ -1538,10 +1538,10 @@
         </div>
         
         <div class="profile-actions">
-            <a href="/logout" class="profile-action-btn" style="background: rgba(255, 0, 110, 0.1); border-color: rgba(255, 0, 110, 0.3);">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </a>
+            <button onclick="logout()" class="profile-action-btn" style="background: rgba(255, 0, 110, 0.1); border-color: rgba(255, 0, 110, 0.3); border: none; cursor: pointer; font-family: inherit; width: 100%;">
+    <i class="fas fa-sign-out-alt"></i>
+    <span>Logout</span>
+</button>
         </div>
     </div>
 </div>
@@ -2090,6 +2090,56 @@
     </div>
     
     <script>
+        // ==================== JWT AUTHENTICATION ====================
+function checkAuth() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        window.location.href = '/login-page';
+        return false;
+    }
+    return true;
+}
+
+async function authenticatedFetch(url, options = {}) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        window.location.href = '/login-page';
+        throw new Error('Not authenticated');
+    }
+    
+    const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+    };
+    
+    const response = await fetch(url, {
+        ...options,
+        headers
+    });
+    
+    if (response.status === 401) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_email');
+        localStorage.removeItem('user_name');
+        window.location.href = '/login-page';
+        throw new Error('Session expired');
+    }
+    
+    return response;
+}
+
+async function logout() {
+    try {
+        await authenticatedFetch('/logout', { method: 'POST' });
+    } catch (error) {
+        console.error('Logout error:', error);
+    } finally {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_email');
+        localStorage.removeItem('user_name');
+        window.location.href = '/login-page';
+    }
+}
         // Global variables
         let accumulatedParams = {};
         let currentRating = 5;
@@ -2553,7 +2603,7 @@ function sendToAI(message) {
     `;
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
-    fetch('/api/chatbot', {
+    authenticatedFetch('/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: message })
@@ -2636,7 +2686,7 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
             resultsCard.innerHTML = '<div class="spinner"></div>';
             
             try {
-                const response = await fetch('/api/predict', {
+                const response = await authenticatedFetch('/api/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -2760,7 +2810,7 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
                 const formData = new FormData();
                 formData.append('file', file);
                 
-                const response = await fetch('/api/extract-from-file', {
+                const response = await authenticatedFetch('/api/extract-from-file', {
                     method: 'POST',
                     body: formData
                 });
@@ -2923,7 +2973,7 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
             chatState.data.timestamp = new Date().toISOString().slice(0, 16);
             
             try {
-                const response = await fetch('/api/predict', {
+                const response = await authenticatedFetch('/api/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(chatState.data)
@@ -3138,7 +3188,7 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
             return;
         }
         
-        const response = await fetch('/api/submit-review', {
+        const response = await authenticatedFetch('/api/submit-review', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3170,7 +3220,7 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
         
         async function loadReviews() {
             try {
-                const response = await fetch('/api/get-reviews');
+                const response = await authenticatedFetch('/api/get-reviews');
                 const result = await response.json();
                 if (result.success && result.reviews.length > 0) {
                    document.getElementById('reviewsList').innerHTML = result.reviews.reverse().map(review => `
@@ -3191,7 +3241,7 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
         
         // Dashboard Charts
         function initCharts() {
-            fetch('/api/charts-data')
+            authenticatedFetch('/api/charts-data')
                 .then(response => response.json())
                 .then(data => {
                     new Chart(document.getElementById('trendChart'), {
@@ -3274,7 +3324,7 @@ let userProfileData = null;
 
 async function loadUserProfile() {
     try {
-        const response = await fetch('/api/user-profile');
+        const response = await authenticatedFetch('/api/user-profile');
         const data = await response.json();
         
         if (data.success) {
@@ -3333,7 +3383,7 @@ let consumptionChart = null;
 
 async function loadDashboardData() {
     try {
-        const response = await fetch('/api/dashboard-stats');
+        const response = await authenticatedFetch('/api/dashboard-stats');
         const data = await response.json();
         
         if (data.success) {
@@ -3462,7 +3512,7 @@ function updateConsumptionChart(trendData) {
 
 async function loadPredictionHistory() {
     try {
-        const response = await fetch('/api/prediction-history');
+        const response = await authenticatedFetch('/api/prediction-history');
         const data = await response.json();
         
         if (data.success && data.predictions.length > 0) {
@@ -3520,7 +3570,15 @@ async function loadPredictionHistory() {
 // ==================== INITIALIZE ON PAGE LOAD ====================
 
 window.addEventListener('load', function() {
-    loadUserProfile();
+    if (checkAuth()) {
+        loadUserProfile();
+        
+        // Set username from localStorage if available
+        const userName = localStorage.getItem('user_name');
+        if (userName) {
+            document.getElementById('userName').textContent = userName;
+        }
+    }
 });
 
 // Update the existing showTab function
@@ -3551,7 +3609,7 @@ async function downloadReport() {
         btn.disabled = true;
         
         // Download report
-        const response = await fetch('/api/download-report');
+        const response = await authenticatedFetch('/api/download-report');
         
         if (!response.ok) {
             const error = await response.json();
@@ -3592,7 +3650,7 @@ async function emailReport() {
         btn.disabled = true;
         
         // Send email
-        const response = await fetch('/api/email-report', {
+        const response = await authenticatedFetch('/api/email-report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
