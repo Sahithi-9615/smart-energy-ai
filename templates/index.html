@@ -2471,7 +2471,7 @@ async function makePredictionFromParams(params) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
     try {
-        const response = await fetch('/api/predict', {
+        const response = authenticatedFetch('/api/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(params)
