@@ -1766,6 +1766,13 @@
                         Chat with our AI to get personalized energy predictions
                     </p>
                 </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div class="chart-subtitle">Chat History Enabled</div>
+    <button onclick="clearChatHistory()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+        <i class="fas fa-trash"></i> Clear History
+    </button>
+</div>
                 
                 <div class="chat-window">
                     <div class="chat-messages" id="chatMessages">
@@ -1778,13 +1785,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-    <div class="chart-subtitle">Chat History Enabled</div>
-    <button onclick="clearChatHistory()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
-        <i class="fas fa-trash"></i> Clear History
-    </button>
-</div>
                     
                     <div class="chat-input-container">
                         <button class="btn btn-voice" id="speakerButton" onclick="toggleAutoSpeak()" title="Toggle Auto-speak responses">
