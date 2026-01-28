@@ -1778,6 +1778,13 @@
                             </div>
                         </div>
                     </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div class="chart-subtitle">Chat History Enabled</div>
+    <button onclick="clearChatHistory()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+        <i class="fas fa-trash"></i> Clear History
+    </button>
+</div>
                     
                     <div class="chat-input-container">
                         <button class="btn btn-voice" id="speakerButton" onclick="toggleAutoSpeak()" title="Toggle Auto-speak responses">
@@ -2264,6 +2271,96 @@ function resetChatState() {
     }
 }
 
+async function initializeChatHistory() {
+    console.log("📚 Loading chat history...");
+    try {
+        const response = await authenticatedFetch('/api/chat-history');
+        const data = await response.json();
+        
+        if (data.success && data.chat_history.length > 0) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Clear existing messages except system message
+            const messages = messagesContainer.querySelectorAll('.message');
+            messages.forEach(msg => {
+                if (!msg.textContent.includes("Hello! I'm your Smart Energy")) {
+                    msg.remove();
+                }
+            });
+            
+            // Load previous messages
+            data.chat_history.forEach(msg => {
+                displayHistoricalMessage(msg.role, msg.content);
+            });
+            
+            console.log(`✅ Loaded ${data.chat_history.length} messages from history`);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    } catch (error) {
+        console.error("Error loading chat history:", error);
+    }
+}
+
+async function clearChatHistory() {
+    // Add confirmation dialog
+    if (!confirm('Are you sure you want to clear all chat history? This cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await authenticatedFetch('/api/clear-chat-history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear messages from UI
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="message bot">
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">Hello! I'm your Smart Energy AI Assistant. Chat history cleared. I'm ready for a fresh conversation!</div>
+                </div>
+            `;
+            
+            // Reset chat state
+            resetChatState();
+            resetAccumulatedParams();
+            
+            showNotification('✅ Chat history cleared!', 'success');
+        } else {
+            showNotification('❌ Failed to clear chat', 'error');
+        }
+    } catch (error) {
+        console.error('Error clearing chat:', error);
+        showNotification('❌ Error clearing chat: ' + error.message, 'error');
+    }
+}
+
+// Display historical messages in chat
+function displayHistoricalMessage(role, content) {
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    if (role === 'user') {
+        messagesContainer.innerHTML += `
+            <div class="message user">
+                <div class="message-content">${escapeHtml(content)}</div>
+                <div class="message-avatar"><i class="fas fa-user"></i></div>
+            </div>
+        `;
+    } else {
+        messagesContainer.innerHTML += `
+            <div class="message bot">
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content">${content}</div>
+            </div>
+        `;
+    }
+}
+
+
 async function sendMessage() {
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
@@ -2328,7 +2425,7 @@ async function sendMessage() {
     // ============================================================
     // DEFAULT: General conversation
     // ============================================================
-    console.log('💬 Default: General conversation');
+    console.log('💬 Sending to AI with conversation history');
     sendToAI(message);
 }
 
@@ -2661,7 +2758,11 @@ document.getElementById('chatInput').addEventListener('keypress', (e) => {
                     btn.classList.add('active');
                 }
             });
-            
+            if (tabName === 'chat') {
+        setTimeout(() => {
+            initializeChatHistory();  // NEW: Load previous messages
+        }, 100);
+    }
             if (tabName === 'dashboard') setTimeout(initCharts, 100);
             if (tabName === 'reviews') loadReviews();
         }
@@ -3580,6 +3681,10 @@ window.addEventListener('load', function() {
         const userName = localStorage.getItem('user_name');
         if (userName) {
             document.getElementById('userName').textContent = userName;
+        }
+        const chatTab = document.getElementById('chat');
+        if (chatTab && chatTab.classList.contains('active')) {
+            setTimeout(initializeChatHistory, 500);
         }
     }
 });
