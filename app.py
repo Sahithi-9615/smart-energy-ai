@@ -113,11 +113,13 @@ if MONGODB_AVAILABLE and MONGODB_URI:
         users_collection = db['users']
         predictions_collection = db['predictions']
         reviews_collection = db['reviews']
+        chat_collection = db['chat_history']
         
         # Create indexes
         users_collection.create_index('email', unique=True)
         predictions_collection.create_index([('user_email', 1), ('timestamp', -1)])
         reviews_collection.create_index('timestamp')
+        chat_collection.create_index([('user_email', 1), ('timestamp', -1)])
         
         USE_MONGODB = True
         print("✅ MongoDB Atlas connected successfully")
@@ -155,6 +157,165 @@ def init_json_databases():
         with open(REVIEWS_FILE, 'w') as f:
             json.dump([], f, indent=2)
         print(f"✅ Created {REVIEWS_FILE}")
+        
+    CHAT_HISTORY_FILE = os.path.join(JSON_DB_DIR, 'chat_history.json')
+    if not os.path.exists(CHAT_HISTORY_FILE):
+        with open(CHAT_HISTORY_FILE, 'w') as f:
+            json.dump({}, f, indent=2)
+        print(f"✅ Created {CHAT_HISTORY_FILE}")
+
+CHAT_HISTORY_FILE = os.path.join(JSON_DB_DIR, 'chat_history.json')
+
+def load_chat_history(user_email):
+    """Load chat history for a specific user from MongoDB or JSON"""
+    user_email = user_email.lower().strip()
+    
+    if USE_MONGODB and db is not None:
+        try:
+            # Get all messages for this user, sorted by timestamp
+            messages = list(db.chat_history.find(
+                {'user_email': user_email}
+            ).sort('timestamp', 1).limit(50))  # Last 50 messages
+            
+            # Format for AI context
+            formatted_messages = []
+            for msg in messages:
+                formatted_messages.append({
+                    'role': 'user',
+                    'content': msg['user_message'],
+                    'timestamp': msg['timestamp']
+                })
+                formatted_messages.append({
+                    'role': 'assistant',
+                    'content': msg['ai_response'],
+                    'timestamp': msg['response_timestamp']
+                })
+            
+            return formatted_messages
+        except Exception as e:
+            print(f"⚠️ Error loading chat history from MongoDB: {e}")
+            return []
+    else:
+        # JSON fallback
+        try:
+            if os.path.exists(CHAT_HISTORY_FILE):
+                with open(CHAT_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    all_history = json.load(f)
+                    
+                    # Get this user's history
+                    user_history = all_history.get(user_email, [])
+                    
+                    # Format for AI context
+                    formatted_messages = []
+                    for exchange in user_history:
+                        formatted_messages.append({
+                            'role': 'user',
+                            'content': exchange['user_message'],
+                            'timestamp': exchange['timestamp']
+                        })
+                        formatted_messages.append({
+                            'role': 'assistant',
+                            'content': exchange['ai_response'],
+                            'timestamp': exchange['response_timestamp']
+                        })
+                    
+                    return formatted_messages[-50:]  # Last 50 messages
+        except Exception as e:
+            print(f"⚠️ Error loading chat history from JSON: {e}")
+            return []
+        
+        return []
+
+
+def save_chat_message(user_email, user_message, ai_response, ai_model):
+    """Save a chat exchange to database"""
+    user_email = user_email.lower().strip()
+    
+    if USE_MONGODB and db is not None:
+        try:
+            db.chat_history.insert_one({
+                'user_email': user_email,
+                'user_message': user_message,
+                'ai_response': ai_response,
+                'ai_model': ai_model,  # groq, gemini, or fallback
+                'timestamp': datetime.now().isoformat(),
+                'response_timestamp': datetime.now().isoformat()
+            })
+            print(f"✅ Chat saved to MongoDB")
+            return True
+        except Exception as e:
+            print(f"❌ Error saving chat to MongoDB: {e}")
+            return False
+    else:
+        # JSON fallback
+        try:
+            # Load existing history
+            if os.path.exists(CHAT_HISTORY_FILE):
+                with open(CHAT_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    all_history = json.load(f)
+            else:
+                all_history = {}
+            
+            # Initialize user's history if not exists
+            if user_email not in all_history:
+                all_history[user_email] = []
+            
+            # Add new message exchange
+            all_history[user_email].append({
+                'user_message': user_message,
+                'ai_response': ai_response,
+                'ai_model': ai_model,
+                'timestamp': datetime.now().isoformat(),
+                'response_timestamp': datetime.now().isoformat()
+            })
+            
+            # Keep only last 50 messages per user to avoid huge file
+            all_history[user_email] = all_history[user_email][-50:]
+            
+            # Save back to file
+            from pathlib import Path
+            Path(JSON_DB_DIR).mkdir(parents=True, exist_ok=True)
+            with open(CHAT_HISTORY_FILE, 'w', encoding='utf-8') as f:
+                json.dump(all_history, f, indent=2, ensure_ascii=False)
+            
+            print(f"✅ Chat saved to JSON")
+            return True
+        except Exception as e:
+            print(f"❌ Error saving chat to JSON: {e}")
+            return False
+
+
+def clear_chat_history(user_email):
+    """Clear all chat history for a user"""
+    user_email = user_email.lower().strip()
+    
+    if USE_MONGODB and db is not None:
+        try:
+            db.chat_history.delete_many({'user_email': user_email})
+            print(f"✅ Chat history cleared for {user_email}")
+            return True
+        except Exception as e:
+            print(f"❌ Error clearing chat: {e}")
+            return False
+    else:
+        # JSON fallback
+        try:
+            if os.path.exists(CHAT_HISTORY_FILE):
+                with open(CHAT_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    all_history = json.load(f)
+                
+                if user_email in all_history:
+                    all_history[user_email] = []
+                
+                with open(CHAT_HISTORY_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(all_history, f, indent=2, ensure_ascii=False)
+                
+                print(f"✅ Chat history cleared for {user_email}")
+                return True
+        except Exception as e:
+            print(f"❌ Error clearing chat: {e}")
+            return False
+
 
 if CORS_AVAILABLE:
     CORS(app)
@@ -893,36 +1054,72 @@ def rule_based_extraction(text_content):
     
     return data
 
-def chat_with_groq(message, system_context):
-    """Chat with Groq (PRIMARY)"""
+def chat_with_groq_history(message, system_context, conversation_history):
+    """Chat with Groq including conversation history (PRIMARY)"""
     if not GROQ_READY:
         return None, "Groq not available"
     
     try:
+        # Build messages array with history + new message
+        messages = [
+            {"role": "system", "content": system_context}
+        ]
+        
+        # Add conversation history
+        for hist_msg in conversation_history:
+            messages.append({
+                "role": hist_msg['role'],
+                "content": hist_msg['content']
+            })
+        
+        # Add current user message
+        messages.append({
+            "role": "user",
+            "content": message
+        })
+        
         response = groq_client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_context},
-                {"role": "user", "content": message}
-            ],
+            messages=messages,
             model="llama-3.3-70b-versatile",
             temperature=0.7,
             max_tokens=500
         )
         return response.choices[0].message.content, None
     except Exception as e:
-        return None, str(e)
+        error_msg = str(e)
+        print(f"❌ Groq extraction failed: {error_msg[:200]}")
+        return None, error_msg
 
-def chat_with_gemini(message, system_context):
-    """Chat with Gemini (BACKUP)"""
+
+def chat_with_gemini_history(message, system_context, conversation_history):
+    """Chat with Gemini including conversation history (BACKUP)"""
     if not GEMINI_READY:
         return None, "Gemini not available"
     
     try:
-        full_prompt = f"{system_context}\n\nUser message: {message}\n\nYour response:"
+        # Build conversation context string
+        history_context = ""
+        for i, hist_msg in enumerate(conversation_history):
+            if hist_msg['role'] == 'user':
+                history_context += f"User: {hist_msg['content']}\n"
+            else:
+                history_context += f"Assistant: {hist_msg['content']}\n"
+        
+        full_prompt = f"""{system_context}
+
+CONVERSATION HISTORY:
+{history_context}
+
+Current User Message: {message}
+
+Your response:"""
+        
         response = gemini_model.generate_content(full_prompt)
         return response.text, None
     except Exception as e:
-        return None, str(e)
+        error_msg = str(e)
+        print(f"❌ Gemini extraction failed: {error_msg[:200]}")
+        return None, error_msg
 
 def get_fallback_chat_response(message):
     """Enhanced rule-based fallback chat"""
@@ -1489,10 +1686,16 @@ def predict():
 @app.route('/api/chatbot', methods=['POST'])
 @jwt_required
 def chatbot():
-    """AI chatbot endpoint (JWT protected)"""
+    """AI chatbot endpoint with conversation history (JWT protected)"""
     try:
+        user = get_current_user()
         message = request.json.get('message', '').strip()
-        print(f"\n💬 Chatbot message: {message}")
+        
+        print(f"\n💬 Chatbot message from {user['email']}: {message}")
+        
+        # Load conversation history for context
+        conversation_history = load_chat_history(user['email'])
+        print(f"📚 Loaded {len(conversation_history)} previous messages")
         
         system_context = """You are the Smart Energy AI Assistant for a web platform that predicts energy consumption.
 
@@ -1510,27 +1713,43 @@ YOUR ROLE AND CAPABILITIES:
    - Provides: Predictions in kWh, Usage level, Efficiency score, Recommendations
 
 3. ENERGY PREDICTIONS - Guide users through predictions:
-   - When users want predictions, ask for the 8 parameters step-by-step
+   - When users want predictions, ask for the 8 parameters
+   - Remember what they said before (use conversation history)
    - Be encouraging and helpful
+
+4. CONVERSATION MEMORY:
+   - You have access to the full conversation history
+   - Reference previous messages to provide context-aware responses
+   - Remember user preferences mentioned earlier
+   - Avoid repeating questions already answered
 
 RESPONSE STYLE:
 - Keep responses to 2-3 sentences unless explaining features
 - Be conversational and helpful
-- Focus on energy and sustainability"""
+- Focus on energy and sustainability
+- Use conversation history to be more personal"""
 
-        # Layer 1: Try Groq (PRIMARY)
-        print("🟦 Layer 1: Trying Groq (Primary)...")
-        response_text, error = chat_with_groq(message, system_context)
+        # Layer 1: Try Groq (PRIMARY) with conversation history
+        print("🟦 Layer 1: Trying Groq (Primary) with conversation history...")
+        response_text, error = chat_with_groq_history(
+            message, 
+            system_context, 
+            conversation_history
+        )
         ai_used = 'groq'
         
         # Layer 2: Try Gemini if Groq failed (BACKUP)
         if response_text is None:
             print(f"⚠️  Groq failed: {error[:100]}")
-            print("🔷 Layer 2: Trying Gemini (Backup)...")
-            response_text, error = chat_with_gemini(message, system_context)
+            print("🔷 Layer 2: Trying Gemini (Backup) with conversation history...")
+            response_text, error = chat_with_gemini_history(
+                message, 
+                system_context, 
+                conversation_history
+            )
             ai_used = 'gemini'
         
-        # Layer 3: Rule-based fallback
+        # Layer 3: Rule-based fallback (no history context)
         if response_text is None:
             print(f"⚠️  Gemini failed: {error[:100]}")
             print("🔶 Layer 3: Using rule-based fallback...")
@@ -1538,10 +1757,58 @@ RESPONSE STYLE:
             ai_used = 'fallback'
         
         print(f"✅ Response generated via {ai_used.upper()}")
+        
+        # SAVE CHAT MESSAGE to database
+        save_chat_message(user['email'], message, response_text, ai_used)
+        
         return jsonify({'response': response_text, 'powered_by': ai_used})
         
     except Exception as e:
+        print(f"❌ Chatbot error: {e}")
         return jsonify({'response': 'Error processing request', 'powered_by': 'error'}), 500
+
+@app.route('/api/chat-history', methods=['GET'])
+@jwt_required
+def get_chat_history():
+    """Retrieve chat history for current user (JWT protected)"""
+    try:
+        user = get_current_user()
+        history = load_chat_history(user['email'])
+        
+        # Format for frontend display
+        formatted_history = []
+        for msg in history:
+            formatted_history.append({
+                'role': msg['role'],
+                'content': msg['content'],
+                'timestamp': msg['timestamp']
+            })
+        
+        return jsonify({
+            'success': True,
+            'chat_history': formatted_history,
+            'total_messages': len(formatted_history)
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/clear-chat-history', methods=['POST'])
+@jwt_required
+def clear_chat():
+    """Clear chat history for current user (JWT protected)"""
+    try:
+        user = get_current_user()
+        success = clear_chat_history(user['email'])
+        
+        if success:
+            return jsonify({'success': True, 'message': 'Chat history cleared'})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to clear chat'}), 500
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/submit-review', methods=['POST'])
 @jwt_required
